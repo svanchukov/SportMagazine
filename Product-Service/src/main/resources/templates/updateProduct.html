@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактирование продукта</title>
+</head>
+<body>
+<h1>Редактировать продукт</h1>
+<form th:action="@{'/products/update/' + ${product.id}}" method="post">
+    <label>Название:</label>
+    <input type="text" name="name" th:value="${product.name}" required><br>
+
+    <label>Категория:</label>
+    <input type="text" name="category" th:value="${product.category}" required><br>
+
+    <label>Бренд:</label>
+    <input type="text" name="brand" th:value="${product.brand}" required><br>
+
+    <label>Цена:</label>
+    <input type="number" name="price" th:value="${product.price}" required><br>
+
+    <button type="submit">Сохранить изменения</button>
+</form>
+<a href="/products/">Назад к списку</a>
+</body>
+</html>

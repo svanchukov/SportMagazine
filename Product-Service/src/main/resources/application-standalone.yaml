@@ -1,0 +1,14 @@
+svanchukov:
+  services:
+    order:
+      uri: http://localhost:8081
+
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/product
+    username: product
+    password: product
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

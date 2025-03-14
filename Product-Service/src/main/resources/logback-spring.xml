@@ -1,0 +1,19 @@
+<configuration>
+
+    <!-- Логирование для пакета ru.svanchukov -->
+    <logger name="ru.svanchukov" level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Конфигурация для корневого логгера -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Аппендер для вывода логов в консоль -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+        </encoder>
+    </appender>
+</configuration>
