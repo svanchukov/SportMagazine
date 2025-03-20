@@ -1,6 +1,12 @@
 server:
   port: 8085
 
+loki4j:
+  http:
+    connectTimeoutMs: 300000
+    readTimeoutMs: 300000
+
+
 management:
   endpoints:
     web:

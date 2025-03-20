@@ -1,0 +1,91 @@
+services:
+  admin-server:
+    build:
+      context: ./admin-server
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - LOKI=http://your-loki-server:3100
+    networks:
+      - sportmagazine-network
+
+  product-service:
+    build:
+      context: ./Product-Service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - product-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
+      - SPRING_DATASOURCE_USERNAME=product
+      - SPRING_DATASOURCE_PASSWORD=product
+    networks:
+      - sportmagazine-network
+
+  order-service:
+    build:
+      context: ./Order-Service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - product-db
+      - kafka
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
+      - SPRING_DATASOURCE_USERNAME=product
+      - SPRING_DATASOURCE_PASSWORD=product
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    networks:
+      - sportmagazine-network
+
+  product-db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=product
+      - POSTGRES_USER=product
+      - POSTGRES_PASSWORD=product
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sportmagazine-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - sportmagazine-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - sportmagazine-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - sportmagazine-network
+
+networks:
+  sportmagazine-network:
+    driver: bridge

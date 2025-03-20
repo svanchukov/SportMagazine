@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16  # Официальный образ PostgreSQL
+          ports:
+            - containerPort: 5432
+          env:  # Настройки базы данных
+            - name: POSTGRES_DB
+              value: "product"
+            - name: POSTGRES_USER
+              value: "product"
+            - name: POSTGRES_PASSWORD
+              value: "product"

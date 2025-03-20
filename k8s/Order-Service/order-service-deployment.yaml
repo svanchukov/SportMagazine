@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  replicas: 1  # Количество подов
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: order-service:1.0  # Ваш локальный образ
+          imagePullPolicy: Never  # Не тянуть из реестра, так как образ локальный в Minikube
+          ports:
+            - containerPort: 8081  # Порт вашего приложения
+          env:  # Переменные окружения из application.yml
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/product"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "product"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "product"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"  # Если Kafka не нужен, удалите эту строку
+            - name: SERVER_PORT
+              value: "8081"
