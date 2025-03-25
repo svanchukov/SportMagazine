@@ -6,12 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import ru.svanchukov.Order_Service.dto.CreateNewProductDTO;
-import ru.svanchukov.Order_Service.dto.ProductDTO;
+import ru.svanchukov.Order_Service.dto.Event.OrderEvent;
 
 import java.io.IOException;
 import java.util.Map;
-
-import static org.springframework.kafka.support.KafkaHeaders.TOPIC;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class KafkaService {
     public void sendProductUpdateEvent(Long productId, Map<String, Object> updates) {
         try {
             String message = objectMapper.writeValueAsString(updates);
-            kafkaTemplate.send(TOPIC, "update-product-id " + productId, message);
+            kafkaTemplate.send("product-events", "update-product-id " + productId, message);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при отправлении сообщения в Kafka", e);
         }
@@ -47,29 +45,13 @@ public class KafkaService {
             throw new RuntimeException("Ошибка при отправке события о создании продукта в Kafka", e);
         }
     }
+
+    public void sendOrderCreateEvent(OrderEvent orderEvent) {
+        try {
+            String message = objectMapper.writeValueAsString(orderEvent);
+            kafkaTemplate.send("order-events", "create-order-" + orderEvent.getOrderId(), message);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Ошибка при отправке события о создании заказа в Kafka", e);
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

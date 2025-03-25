@@ -129,6 +129,14 @@ public class ProductService {
         return findAll(name);
     }
 
+    public void increasePrices(double amount) {
+        List<Product> products = productRepository.findAll();
+        for (Product product : products) {
+            product.setPrice(product.getPrice() + amount);
+        }
+        productRepository.saveAll(products);
+    }
+
     private ProductDTO mapToDto(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId((long) product.getId());

@@ -128,8 +128,15 @@
 			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>User-Service</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
 
-	</dependencies>
+        </dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>

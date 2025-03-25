@@ -1,8 +1,7 @@
 svanchukov:
   services:
     order:
-      uri: http://localhost:8081
-
+      uri: http://localhost:8080
 
 spring:
   datasource:
@@ -12,3 +11,10 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true  # Добавляем эту настройку
