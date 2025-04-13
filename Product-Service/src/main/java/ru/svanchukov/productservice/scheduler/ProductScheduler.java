@@ -27,6 +27,6 @@ public class ProductScheduler {
     @Scheduled(cron = "0 */2 * * * ?")
     public void increaseProductPrices() {
         productService.increasePrices(5.0);
-        System.out.println("Цена увеличилась на 5.0");
+        System.out.println("Цена увеличилась на 5.0 ");
     }
 }

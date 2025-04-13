@@ -6,7 +6,7 @@ services:
     ports:
       - "8085:8085"
     environment:
-      - LOKI=http://your-loki-server:3100
+      - LOKI=http://svanchukov-loki:3100
     networks:
       - sportmagazine-network
 
@@ -18,10 +18,14 @@ services:
       - "8080:8080"
     depends_on:
       - product-db
+      - redis
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
       - SPRING_DATASOURCE_USERNAME=product
       - SPRING_DATASOURCE_PASSWORD=product
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SVANCHUKOV_SERVICES_ORDER_URI=http://order-service:8081
     networks:
       - sportmagazine-network
 
@@ -83,6 +87,29 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - sportmagazine-network
+
+  svanchukov-prom:
+    image: prom/prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    networks:
+      - sportmagazine-network
+
+  svanchukov-gra:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - sportmagazine-network
+
+  svanchukov-loki:
+    image: grafana/loki:2.9.4
+    ports:
+      - "3100:3100"
     networks:
       - sportmagazine-network
 
