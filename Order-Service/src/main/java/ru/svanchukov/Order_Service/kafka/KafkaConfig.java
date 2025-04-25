@@ -1,6 +1,5 @@
 package ru.svanchukov.Order_Service.kafka;
 
-import com.example.User_Service.service.kafka.UserCreatedEvent;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;

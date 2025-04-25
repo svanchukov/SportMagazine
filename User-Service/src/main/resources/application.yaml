@@ -7,6 +7,19 @@ spring:
     username: product
     password: product
     driver-class-name: org.postgresql.Driver
+  application:
+    name:
+      user-service
+
+eureka:
+  client:
+    register-with-eureka: true  # Ставим true, чтобы сервис регистрировался в Eureka
+    fetch-registry: true         # Убираем false, чтобы сервис мог получать информацию о других сервисах
+    service-url:
+      defaultZone: http://localhost:8761/eureka/  # Указываем URL Eureka сервера
+      instance:
+        prefer-ip-address: true
+
 
   jpa:
     hibernate:
