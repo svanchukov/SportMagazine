@@ -15,6 +15,7 @@ import ru.svanchukov.productservice.dto.product.ProductDTO;
 import ru.svanchukov.productservice.service.ProductService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/products")
@@ -28,7 +29,7 @@ public class ProductsController {
     // Получение списка всех продуктов (HTML)
     @Operation(summary = "Получение всех продуктов", description = "Возвращает список всех продуктов")
     @GetMapping
-    public String getProductsList(Model model, @RequestParam(name = "filter", required = false) String name) {
+    public String getProductsList(Model model, @RequestParam(name = "name", required = false) String name) {
         logger.info("Запрос на получение всех продуктов");
         List<ProductDTO> products = productService.findAll(name);
         model.addAttribute("products", products);
@@ -43,15 +44,15 @@ public class ProductsController {
         return "product/new";
     }
 
-
     // Создание нового продукта (HTML)
     @Operation(summary = "Создание нового продукта", description = "Создаёт новый продукт и перенаправляет на список")
     @PostMapping
-    public String createProduct(@Valid @ModelAttribute CreateNewProductDTO createNewProductDTO,
+    public String createProduct(@Valid @ModelAttribute("createNewProductDTO") CreateNewProductDTO createNewProductDTO,
                                 BindingResult bindingResult,
                                 Model model) {
         logger.info("Запрос на создание нового продукта");
         if (bindingResult.hasErrors()) {
+            model.addAttribute("createNewProductDTO", createNewProductDTO);
             return "product/new";
         }
         ProductDTO productDTO = productService.saveProduct(createNewProductDTO);
@@ -64,8 +65,13 @@ public class ProductsController {
     @GetMapping("/search")
     public String searchByName(@RequestParam(required = false) String name, Model model) {
         logger.info("Запрос на поиск продукта по имени: {}", name);
-        List<ProductDTO> products = productService.searchByName(name);
-        model.addAttribute("products", products);
-        return "product/product";
+        Optional<ProductDTO> product = productService.searchByName(name);
+        if (product.isPresent()) {
+            model.addAttribute("product", product.get());
+            return "product/product_single";
+        } else {
+            model.addAttribute("error", "Продукт с таким именем не найден");
+            return "redirect:/product";
+        }
     }
 }

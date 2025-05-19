@@ -118,20 +118,21 @@ public class ProductsService {
         logger.info("Продукт с ID: {} успешно удален", productId);
     }
 
-    public List<ProductDTO> searchByName(String name) {
+    public Optional<ProductDTO> searchByName(String name) {
         logger.info("Запрос на поиск продукта по имени: {}", name);
         if (name != null && !name.isEmpty()) {
             return productRepository.findByName(name)
                     .stream()
-                    .map(this::mapToDto)
-                    .collect(Collectors.toList());
+                    .findFirst()
+                    .map(this::mapToDto);
         }
-        return findAll();
+        return Optional.empty();
     }
 
     private ProductDTO mapToDto(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId((long) product.getId());
+        dto.setName(product.getName());
         dto.setBrand(product.getBrand());
         dto.setPrice(product.getPrice());
         dto.setCategory(product.getCategory());

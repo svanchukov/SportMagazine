@@ -15,7 +15,7 @@ public class CreateNewProductDTO {
     @NotBlank(message = "Категория не должна быть пустой")
     private String category;
 
-    @Size(max = 200, message = "Описание не должно превышать 200 символов")
+    @Size(max = 500, message = "Описание не должно превышать 200 символов")
     private String descriptions;
 
     @Min(value = 1, message = "Цена не должна быть нулевой или отрицательной")

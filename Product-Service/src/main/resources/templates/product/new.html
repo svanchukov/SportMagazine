@@ -1,31 +1,48 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создание нового продукта</title>
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
 <h1>Создание нового продукта</h1>
-<form action="/products" method="post">
+<form action="/products" method="post" th:object="${createNewProductDTO}">
+
     <div>
         <label for="name">Название:</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" th:field="*{name}"/>
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
     </div>
+
     <div>
         <label for="category">Категория:</label>
-        <input type="text" id="category" name="category" required>
+        <input type="text" id="category" th:field="*{category}"/>
+        <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
     </div>
+
     <div>
         <label for="brand">Бренд:</label>
-        <input type="text" id="brand" name="brand" required>
+        <input type="text" id="brand" th:field="*{brand}"/>
+        <div th:if="${#fields.hasErrors('brand')}" th:errors="*{brand}"></div>
     </div>
+
     <div>
         <label for="price">Цена:</label>
-        <input type="number" id="price" name="price" required>
+        <input type="number" id="price" th:field="*{price}"/>
+        <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
     </div>
+
     <button type="submit">Создать продукт</button>
 </form>
+
 <a href="/products">Отменить</a>
 </body>
 </html>

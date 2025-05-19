@@ -1,78 +1,32 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактирование товара «[[${product.name}]]»</title>
+    <title>Редактирование продукта</title>
 </head>
 <body>
+<h1>Редактировать продукт</h1>
 
-<a th:href="@{/products/{productId}(productId=${product.id})}">← К товару</a>
-<h1>Редактирование товара «[[${product.name}]]»</h1>
+<form th:action="@{'/products/' + ${product.id} + '/edit'}" method="post" th:object="${updateProductDTO}">
 
-<!-- Форма редактирования -->
-<form th:action="@{/products/{productId}/edit(productId=${product.id})}" method="post" th:object="${updateProductDTO}">
+    <label>Название:</label>
+    <input type="text" th:field="*{name}">
+    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red"></div><br>
 
-    <!-- Блок для отображения всех ошибок -->
-    <div th:if="${#fields.hasErrors('*')}">
-        <h2>Допущены ошибки</h2>
-        <ul style="color: red;">
-            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-        </ul>
-    </div>
+    <label>Категория:</label>
+    <input type="text" th:field="*{category}">
+    <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}" style="color:red"></div><br>
 
-    <!-- Поле Название -->
-    <div>
-        <label for="name">Название:<br></label>
-        <input type="text" id="name" th:field="*{name}" required>
-        <div th:if="${#fields.hasErrors('name')}" style="color: red;">
-            <span th:errors="*{name}"></span>
-        </div>
-    </div>
-    <br>
+    <label>Бренд:</label>
+    <input type="text" th:field="*{brand}">
+    <div th:if="${#fields.hasErrors('brand')}" th:errors="*{brand}" style="color:red"></div><br>
 
-    <!-- Поле Категория -->
-    <div>
-        <label for="category">Категория:<br></label>
-        <input type="text" id="category" th:field="*{category}" required>
-        <div th:if="${#fields.hasErrors('category')}" style="color: red;">
-            <span th:errors="*{category}"></span>
-        </div>
-    </div>
-    <br>
+    <label>Цена:</label>
+    <input type="number" step="0.01" th:field="*{price}">
+    <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}" style="color:red"></div><br>
 
-    <!-- Поле Описание -->
-    <div>
-        <label for="descriptions">Описание:<br></label>
-        <textarea id="descriptions" th:field="*{descriptions}"></textarea>
-        <div th:if="${#fields.hasErrors('descriptions')}" style="color: red;">
-            <span th:errors="*{descriptions}"></span>
-        </div>
-    </div>
-    <br>
-
-    <!-- Поле Цена -->
-    <div>
-        <label for="price">Цена:<br></label>
-        <input type="number" id="price" th:field="*{price}" required>
-        <div th:if="${#fields.hasErrors('price')}" style="color: red;">
-            <span th:errors="*{price}"></span>
-        </div>
-    </div>
-    <br>
-
-    <!-- Поле Бренд -->
-    <div>
-        <label for="brand">Бренд:<br></label>
-        <input type="text" id="brand" th:field="*{brand}" required>
-        <div th:if="${#fields.hasErrors('brand')}" style="color: red;">
-            <span th:errors="*{brand}"></span>
-        </div>
-    </div>
-    <br>
-
-    <button type="submit">Обновить</button>
+    <button type="submit">Сохранить изменения</button>
 </form>
 
+<a href="/products">Назад к списку</a>
 </body>
 </html>

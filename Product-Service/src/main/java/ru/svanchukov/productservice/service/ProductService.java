@@ -118,15 +118,15 @@ public class ProductService {
         logger.info("Продукт с ID: {} успешно удален", productId);
     }
 
-    public List<ProductDTO> searchByName(String name) {
+    public Optional<ProductDTO> searchByName(String name) {
         logger.info("Запрос на поиск продукта по имени: {}", name);
         if (name != null && !name.isEmpty()) {
             return productRepository.findByName(name)
                     .stream()
-                    .map(this::mapToDto)
-                    .collect(Collectors.toList());
+                    .findFirst()
+                    .map(this::mapToDto);
         }
-        return findAll(name);
+        return Optional.empty();
     }
 
     public void increasePrices(double amount) {

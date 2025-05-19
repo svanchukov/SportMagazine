@@ -38,7 +38,7 @@ public class ProductController {
     public ProductDTO product(@PathVariable("productId") Long productId) {
         logger.info("Запрос на загрузку продукта с ID: {}", productId);
         return productService.findById(productId)
-                .orElseThrow(() -> new NoSuchElementException("Продукт с ID " + productId + " не найден"));
+                .orElseThrow(() -> new NoSuchElementException("errors.product.not_found"));
     }
 
     // Получение продукта по ID (HTML)
@@ -76,12 +76,11 @@ public class ProductController {
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
                     .map(ObjectError::getDefaultMessage)
                     .toList());
-            return "product/edit"; // Если есть ошибки, возвращаем на страницу редактирования
+            return "product/edit";
         }
         productService.updateProduct(id, updateProductDTO);
         return "redirect:/products/{productId}"; // Перенаправляем на страницу с обновленным продуктом
     }
-
 
 
     // Удаление продукта
@@ -101,7 +100,7 @@ public class ProductController {
         model.addAttribute("error",
                 this.messageSource.getMessage(exception.getMessage(), new Object[0],
                         exception.getMessage(), locale));
-        return "error"; // Возвращает страницу error.html
+        return "product/error";
     }
 
     // Вспомогательный метод для маппинга ProductDTO в UpdateProductDTO

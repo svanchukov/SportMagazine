@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,16 @@
 </head>
 <body>
 <h1>Список продуктов</h1>
-<form method="get" data-th-action="@{/products /list}">
-    <label>Фильтр:<input type="text" name="name" data-th-value="${name}">
+
+<!-- Отображение текущего фильтра -->
+<div th:if="${name != null and !#strings.isEmpty(name)}">
+    <p>Фильтр: <span th:text="${name}"></span></p>
+</div>
+
+<!-- Форма фильтра -->
+<form method="get" th:action="@{/products}">
+    <label>Фильтр:
+        <input type="text" name="name" th:value="${name}" />
         <button type="submit">Поиск</button>
     </label>
 </form>
@@ -24,19 +32,14 @@
     </tr>
     </thead>
     <tbody>
-
-    <!-- Проходим по списку продуктов -->
     <tr th:each="product : ${products}">
         <td th:text="${product.name}"></td>
         <td th:text="${product.category}"></td>
         <td th:text="${product.brand}"></td>
         <td th:text="${product.price} + ' руб.'"></td>
         <td>
-            <!-- Кнопки для перехода на детали и редактирование -->
             <a th:href="@{/products/{productId}(productId=${product.id})}">Детали</a>
             <a th:href="@{/products/{productId}/edit(productId=${product.id})}">Редактировать</a>
-
-            <!-- Форма для удаления продукта -->
             <form method="post" th:action="@{/products/{productId}/delete(productId=${product.id})}" style="display:inline;">
                 <input type="hidden" name="_method" value="DELETE" />
                 <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить этот продукт?')">Удалить</button>
@@ -47,7 +50,6 @@
 </table>
 
 <br>
-<!-- Кнопка для создания нового продукта -->
 <a href="/products/new">Создать новый продукт</a>
 
 </body>
