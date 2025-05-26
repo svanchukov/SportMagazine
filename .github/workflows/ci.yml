@@ -35,8 +35,12 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: ✅ Grant execute permission for Maven wrapper
+        run: chmod +x mvnw
+
       - name: 🔧 Build with Maven
         run: ./mvnw clean install -DskipTests
 
       - name: ✅ Run tests
         run: ./mvnw test
+
