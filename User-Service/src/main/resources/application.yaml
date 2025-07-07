@@ -19,9 +19,6 @@ spring:
       ddl-auto: none
     show-sql: true
 
-  logging:
-    level:
-      org.springframework: DEBUG
 
 eureka:
   client:
