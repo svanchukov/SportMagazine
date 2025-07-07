@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Детали продукта</title>
 </head>
 <body>
@@ -13,21 +12,21 @@
     <p>Имя: <span th:text="${product.name}"></span></p>
     <p>Категория: <span th:text="${product.category}"></span></p>
     <p>Бренд: <span th:text="${product.brand}"></span></p>
+    <p>Описание: <span th:text="${product.descriptions}"></span></p>
     <p>Цена: <span th:text="${product.price}"></span> руб.</p>
 </div>
 
-<!-- Форма для удаления с методом POST, но с hidden методом DELETE -->
-<form th:action="@{/products/{productId}/delete(productId=${product.id})}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить этот продукт?')">
+<form method="post"
+      th:action="@{/products/{id}/delete(id=${product.id}, token=${token})}"
+      onsubmit="return confirm('Вы уверены, что хотите удалить этот продукт?')">
     <input type="hidden" name="_method" value="DELETE"/>
     <button type="submit">Удалить</button>
 </form>
 
-<!-- Кнопка для редактирования -->
-<a th:href="@{/products/{productId}/edit(productId=${product.id})}">Редактировать</a>
+<a th:href="@{/products/{id}/edit(id=${product.id}, token=${token})}">Редактировать</a>
 
 <br>
-<!-- Кнопка для возврата к списку продуктов -->
-<a href="/products">Вернуться к списку продуктов</a>
+<a th:href="@{/products(token=${token})}">Вернуться к списку продуктов</a>
 
 </body>
 </html>

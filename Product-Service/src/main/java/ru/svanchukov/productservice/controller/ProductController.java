@@ -1,9 +1,6 @@
 package ru.svanchukov.productservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,25 +17,27 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
+//import ru.svanchukov.productservice.kafka.KafkaLoggingProducer;
 import ru.svanchukov.productservice.service.ProductService;
 
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
 @Controller
-@RequestMapping(("products/{productId:\\d+}"))
+@RequestMapping("products/{productId:\\d+}")
 @RequiredArgsConstructor
-@Tag(name = "ProductController", description = "Контроллер для управления конкретным продуктом")
 public class ProductController {
 
     private final ProductService productService;
     private final MessageSource messageSource;
+//    private final KafkaLoggingProducer kafkaLoggingProducer; // Инжектируем KafkaLoggingProducer
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     // Загрузка продукта по ID перед каждым запросом
     @ModelAttribute("product")
     public ProductDTO product(@PathVariable("productId") Long productId) {
         logger.info("Запрос на загрузку продукта с ID: {}", productId);
+//        kafkaLoggingProducer.sendLogToKafka("Запрос на загрузку продукта с ID: " + productId); // Отправляем лог в Kafka
         return productService.findById(productId)
                 .orElseThrow(() -> new NoSuchElementException("errors.product.not_found"));
     }
@@ -46,6 +47,11 @@ public class ProductController {
     @GetMapping
     public String getProduct(@PathVariable("productId") Long id, Model model) {
         logger.info("Запрос на получение продукта с ID: {}", id);
+//        kafkaLoggingProducer.sendLogToKafka("Запрос на получение продукта с ID: " + id); // Логирование в Kafka
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = (authentication != null) ? authentication.getName() : "Unknown User";
+        logger.info("Запрос от пользователя: {}", email);
+
         ProductDTO product = productService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
         model.addAttribute("product", product);
@@ -57,6 +63,7 @@ public class ProductController {
     @GetMapping("edit")
     public String getProductEditPage(@PathVariable("productId") Long id, Model model) {
         logger.info("Показ формы редактирования продукта с ID: {}", id);
+//        kafkaLoggingProducer.sendLogToKafka("Показ формы редактирования продукта с ID: " + id); // Логирование в Kafka
         ProductDTO product = productService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
         UpdateProductDTO updateProductDTO = mapToUpdateDto(product);
@@ -76,18 +83,20 @@ public class ProductController {
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
                     .map(ObjectError::getDefaultMessage)
                     .toList());
-            return "product/edit";
+            return "product/edit";  // Возвращаем форму редактирования, если есть ошибки
         }
-        productService.updateProduct(id, updateProductDTO);
-        return "redirect:/products/{productId}"; // Перенаправляем на страницу с обновленным продуктом
-    }
 
+        productService.updateProduct(id, updateProductDTO);
+//        kafkaLoggingProducer.sendLogToKafka("Обновление продукта с ID: " + id); // Логирование в Kafka
+        return "redirect:/products/{productId}"; // Перенаправление на страницу продукта по ID
+    }
 
     // Удаление продукта
     @Operation(summary = "Удаление продукта по ID", description = "Удаляет продукт с определённым ID")
     @PostMapping("delete")
     public String deleteProduct(@PathVariable("productId") Long id) {
         logger.info("Запрос на удаление продукта с ID: {}", id);
+//        kafkaLoggingProducer.sendLogToKafka("Удаление продукта с ID: " + id); // Логирование в Kafka
         productService.delete(id);
         return "redirect:/products"; // Перенаправляем на список продуктов
     }

@@ -3,6 +3,7 @@ package ru.svanchukov.productservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,35 +58,10 @@ public class ProductsService {
     }
 
     public Optional<ProductDTO> findById(Long id) {
-        try (Jedis jedis = new Jedis("localhost", 6379)) {
-            String cacheKey = "product:" + id;  // Ключ, по которому будет искать продукт
-
-            // Пытаемся получить продукт из Redis
-            String cachedProduct = jedis.get(cacheKey);
-
-            if (cachedProduct != null) {
-                ProductDTO productDTO = objectMapper.readValue(cachedProduct, ProductDTO.class);
-                return Optional.of(productDTO);
-            }
-
-            Optional<ProductDTO> productDTO = productRepository.findById(id).map(this::mapToDto);
-            if (productDTO.isPresent()) {
-                try {
-                    String jsonProduct = objectMapper.writeValueAsString(productDTO.get());
-                    jedis.set(cacheKey, jsonProduct);  // Сохраняем продукт в Redis
-                } catch (JsonProcessingException e) {
-                    logger.error("Ошибка сериализации продукта для Redis", e);
-                }
-                return productDTO;
-            }
-
-            return Optional.empty();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        logger.info("Данные получены из базы для ID: {}", id);
+        return productRepository.findById(id).map(this::mapToDto);
     }
+
 
     public void updateProduct(Long id, UpdateProductDTO updateProductDTO) {
         logger.info("Запрос на обновление продукта с ID: {}", id);
@@ -95,12 +71,10 @@ public class ProductsService {
                     return new RuntimeException("Продукт с ID " + id + " не найден");
                 });
 
-        // Обновляем основные данные продукта
         product.setName(updateProductDTO.getName());
         product.setCategory(updateProductDTO.getCategory());
         product.setBrand(updateProductDTO.getBrand());
         product.setPrice(updateProductDTO.getPrice());
-
 
         productRepository.save(product);
         logger.info("Продукт с ID: {} успешно обновлен", id);
@@ -118,15 +92,12 @@ public class ProductsService {
         logger.info("Продукт с ID: {} успешно удален", productId);
     }
 
-    public Optional<ProductDTO> searchByName(String name) {
-        logger.info("Запрос на поиск продукта по имени: {}", name);
-        if (name != null && !name.isEmpty()) {
-            return productRepository.findByName(name)
-                    .stream()
-                    .findFirst()
-                    .map(this::mapToDto);
-        }
-        return Optional.empty();
+    // Список продуктов по фильтру (или все)
+    public List<ProductDTO> searchByNameList(String name) {
+        return productRepository.findAllByName(name)
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     private ProductDTO mapToDto(Product product) {

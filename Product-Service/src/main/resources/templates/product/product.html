@@ -2,21 +2,19 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список продуктов</title>
 </head>
 <body>
 <h1>Список продуктов</h1>
 
-<!-- Отображение текущего фильтра -->
 <div th:if="${name != null and !#strings.isEmpty(name)}">
     <p>Фильтр: <span th:text="${name}"></span></p>
 </div>
 
-<!-- Форма фильтра -->
-<form method="get" th:action="@{/products}">
+<form method="get" th:action="@{/products/search}">
     <label>Фильтр:
         <input type="text" name="name" th:value="${name}" />
+        <input type="hidden" name="token" th:value="${token}" />
         <button type="submit">Поиск</button>
     </label>
 </form>
@@ -38,11 +36,13 @@
         <td th:text="${product.brand}"></td>
         <td th:text="${product.price} + ' руб.'"></td>
         <td>
-            <a th:href="@{/products/{productId}(productId=${product.id})}">Детали</a>
-            <a th:href="@{/products/{productId}/edit(productId=${product.id})}">Редактировать</a>
-            <form method="post" th:action="@{/products/{productId}/delete(productId=${product.id})}" style="display:inline;">
-                <input type="hidden" name="_method" value="DELETE" />
-                <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить этот продукт?')">Удалить</button>
+            <a th:href="@{/products/{id}(id=${product.id}) + '?token=' + ${token}}">Детали</a>
+            <a th:href="@{/products/{id}/edit(id=${product.id}) + '?token=' + ${token}}">Редактировать</a>
+            <form method="post"
+                  th:action="@{/products/{id}/delete(id=${product.id}) + '?token=' + ${token}}"
+                  style="display:inline;">
+                <button type="submit"
+                        onclick="return confirm('Вы уверены, что хотите удалить этот продукт?')">Удалить</button>
             </form>
         </td>
     </tr>
@@ -50,7 +50,7 @@
 </table>
 
 <br>
-<a href="/products/new">Создать новый продукт</a>
-
+<a th:href="@{/products/new(token=${token})}">Создать новый продукт</a>
+<a th:href="@{http://localhost:8083/users}">Перейти к пользователям</a>
 </body>
 </html>

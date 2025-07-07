@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список продуктов</title>
+</head>
+<body>
+<h1>Список продуктов по запросу: <span th:text="${searchName}"></span></h1>
+
+<!-- Выводим ошибку, если не найдено ни одного продукта -->
+<div th:if="${error}">
+    <p th:text="${error}"></p>
+</div>
+
+<!-- Таблица для отображения найденных продуктов -->
+<table border="1">
+    <thead>
+    <tr>
+        <th>Название</th>
+        <th>Бренд</th>
+        <th>Цена</th>
+        <th>Категория</th>
+        <th>Описание</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="product : ${products}">
+        <td th:text="${product.name}"></td>
+        <td th:text="${product.brand}"></td>
+        <td th:text="${product.price} + ' руб.'"></td>
+        <td th:text="${product.category}"></td>
+        <td th:text="${product.descriptions}"></td>
+        <td>
+            <a th:href="@{/products/{productId}(productId=${product.id}, token=${token})}">Детали</a>
+            <a th:href="@{/products/{productId}/edit(productId=${product.id}, token=${token})}">Редактировать</a>
+            <form method="post" th:action="@{/products/{productId}/delete(productId=${product.id}, token=${token})}" style="display:inline;">
+                <input type="hidden" name="_method" value="DELETE" />
+                <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить этот продукт?')">Удалить</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a th:href="@{/products/new(token=${token})}">Создать новый продукт</a>
+
+</body>
+</html>

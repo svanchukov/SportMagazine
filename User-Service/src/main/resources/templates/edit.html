@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать пользователя</title>
+    <style>
+        div { margin: 10px 0; }
+        label { display: inline-block; width: 100px; }
+        input { padding: 5px; }
+        ul { color: red; list-style-type: none; padding: 0; }
+        button { padding: 5px 10px; }
+    </style>
+</head>
+<body>
+<h1>Редактировать пользователя</h1>
+
+<form th:action="@{/user/{userId}/edit(userId=${user.id})}" th:object="${updateUserDTO}" method="post">
+    <div>
+        <label for="name">Имя:</label>
+        <input type="text" id="name" th:field="*{name}" required minlength="3" maxlength="50" />
+    </div>
+
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" th:field="*{email}" required />
+    </div>
+
+    <div>
+        <label for="phoneNumber">Телефон:</label>
+        <input type="text" id="phoneNumber" th:field="*{phoneNumber}" required pattern="^(\\+7[0-9]{9,10}|8[0-9]{9,10})$">
+    </div>
+
+    <div>
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" th:field="*{password}" required minlength="3" />
+    </div>
+
+    <div>
+        <button type="submit">Сохранить изменения</button>
+    </div>
+
+    <div th:if="${#fields.hasErrors()}">
+        <ul>
+            <li th:each="err : ${#fields.errors()}" th:text="${err} + ' (поле: ' + ${#fields.errorsForField(err.field)} + ')'"></li>
+        </ul>
+    </div>
+</form>
+
+<a th:href="@{/user/{userId}(userId=${user.id})}">Отмена</a>
+
+</body>
+</html>

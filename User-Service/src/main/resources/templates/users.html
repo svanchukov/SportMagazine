@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список пользователей</title>
+</head>
+<body>
+
+<h1>Список пользователей</h1>
+
+<div>
+    <a th:href="@{/users/new}">Добавить нового пользователя</a>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Имя</th>
+        <th>Email</th>
+        <th>Телефон</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}" th:unless="${users.empty}">
+        <td th:text="${user.name}">Имя</td>
+        <td th:text="${user.email}">Email</td>
+        <td th:text="${user.phoneNumber}">Телефон</td>
+        <td>
+            <!-- Только если у пользователя есть ID, показываем действия -->
+            <div th:if="${user.id != null}">
+                <a th:href="@{/user/{userId}/edit(userId=${user.id})}">Редактировать</a>
+                <form th:action="@{/user/{userId}/delete(userId=${user.id})}" method="post" style="display:inline">
+                    <button type="submit">Удалить</button>
+                </form>
+            </div>
+
+            <!-- Иначе отображаем сообщение об ошибке -->
+            <div th:if="${user.id == null}">
+                <span>Ошибка: нет ID</span>
+            </div>
+        </td>
+    </tr>
+
+    <!-- Сообщение, если список пуст -->
+    <tr th:if="${users.empty}">
+        <td colspan="4">Нет пользователей</td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{http://localhost:8080/products}" class="btn btn-primary">Перейти к продуктам</a>
+
+</body>
+</html>

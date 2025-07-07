@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание пользователя</title>
+</head>
+<body>
+<h1>Создание нового пользователя</h1>
+<form th:action="@{/users}" th:object="${createNewUserDTO}" method="post">
+    <div>
+        <label for="name">Имя:</label>
+        <input type="text" id="name" th:field="*{name}" required minlength="1" maxlength="100">
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" th:field="*{email}" required>
+    </div>
+    <div>
+        <label for="phoneNumber">Телефон:</label>
+        <input type="text" id="phoneNumber" th:field="*{phoneNumber}" required
+               pattern="^(\\+7[0-9]{10}|8[0-9]{10})$">
+
+        <div th:if="${#fields.hasErrors('phoneNumber')}" style="color:red">
+            <span th:each="err : ${#fields.errors('phoneNumber')}" th:text="${err}"></span>
+        </div>
+    </div>
+
+    <div>
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" th:field="*{password}" required minlength="3">
+    </div>
+
+    <button type="submit">Создать</button>
+
+    <div th:if="${#fields.hasErrors()}">
+        <ul>
+            <li th:each="err : ${#fields.errors()}" th:text="${err} + ' (поле: ' + ${#fields.errorsForField(err.field)} + ')'"></li>
+        </ul>
+    </div>
+</form>
+</body>
+</html>

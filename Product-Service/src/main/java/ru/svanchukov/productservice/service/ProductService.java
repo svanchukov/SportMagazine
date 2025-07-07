@@ -37,7 +37,6 @@ public class ProductService {
         product.setPrice(createNewProductDTO.getPrice());
         product.setBrand(createNewProductDTO.getBrand());
 
-
         try {
             productRepository.save(product);
             logger.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
@@ -57,34 +56,10 @@ public class ProductService {
     }
 
     public Optional<ProductDTO> findById(Long id) {
-        try (Jedis jedis = new Jedis("localhost", 6379)) {
-            String cacheKey = "product:" + id;  // Ключ, по которому будет искать продукт
-
-            // Пытаемся получить продукт из Redis
-            String cachedProduct = jedis.get(cacheKey);
-
-            if (cachedProduct != null) {
-                ProductDTO productDTO = objectMapper.readValue(cachedProduct, ProductDTO.class);
-                return Optional.of(productDTO);
-            }
-
-            Optional<ProductDTO> productDTO = productRepository.findById(id).map(this::mapToDto);
-            if (productDTO.isPresent()) {
-                try {
-                    String jsonProduct = objectMapper.writeValueAsString(productDTO.get());
-                    jedis.set(cacheKey, jsonProduct);  // Сохраняем продукт в Redis
-                } catch (JsonProcessingException e) {
-                    logger.error("Ошибка сериализации продукта для Redis", e);
-                }
-                return productDTO;
-            }
-
-            return Optional.empty();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        logger.info("Поиск продукта с ID: {} в базе", id);
+        Optional<ProductDTO> productDTO = productRepository.findById(id).map(this::mapToDto);
+        productDTO.ifPresent(dto -> logger.info("Найден продукт: {}", dto));
+        return productDTO;
     }
 
     public void updateProduct(Long id, UpdateProductDTO updateProductDTO) {
@@ -99,6 +74,7 @@ public class ProductService {
         product.setName(updateProductDTO.getName());
         product.setCategory(updateProductDTO.getCategory());
         product.setBrand(updateProductDTO.getBrand());
+        product.setDescriptions(updateProductDTO.getDescriptions());
         product.setPrice(updateProductDTO.getPrice());
 
 
@@ -118,16 +94,6 @@ public class ProductService {
         logger.info("Продукт с ID: {} успешно удален", productId);
     }
 
-    public Optional<ProductDTO> searchByName(String name) {
-        logger.info("Запрос на поиск продукта по имени: {}", name);
-        if (name != null && !name.isEmpty()) {
-            return productRepository.findByName(name)
-                    .stream()
-                    .findFirst()
-                    .map(this::mapToDto);
-        }
-        return Optional.empty();
-    }
 
     public void increasePrices(double amount) {
         List<Product> products = productRepository.findAll();
@@ -140,6 +106,7 @@ public class ProductService {
     private ProductDTO mapToDto(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId((long) product.getId());
+        dto.setName(product.getName());
         dto.setBrand(product.getBrand());
         dto.setPrice(product.getPrice());
         dto.setCategory(product.getCategory());

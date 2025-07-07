@@ -6,16 +6,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.productservice.dto.product.CreateNewProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
-import ru.svanchukov.productservice.service.ProductService;
+import ru.svanchukov.productservice.service.ProductsService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/products")
@@ -23,55 +25,69 @@ import java.util.Optional;
 @Tag(name = "ProductsController", description = "Контроллер для управления списком продуктов")
 public class ProductsController {
 
-    private final ProductService productService;
+    private final ProductsService productsService;
     private static final Logger logger = LoggerFactory.getLogger(ProductsController.class);
 
-    // Получение списка всех продуктов (HTML)
     @Operation(summary = "Получение всех продуктов", description = "Возвращает список всех продуктов")
     @GetMapping
-    public String getProductsList(Model model, @RequestParam(name = "name", required = false) String name) {
+    public String getProductsList(Model model,
+                                  @RequestParam(name = "name", required = false) String name,
+                                  @RequestParam(name = "token", required = false) String token) {
         logger.info("Запрос на получение всех продуктов");
-        List<ProductDTO> products = productService.findAll(name);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication != null && authentication.getPrincipal() instanceof UserDetails
+                ? ((UserDetails) authentication.getPrincipal()).getUsername()
+                : "Unknown User";
+        logger.info("Запрос от пользователя: {}", email);
+
+        List<ProductDTO> products = productsService.findAll();
         model.addAttribute("products", products);
         model.addAttribute("name", name);
+        model.addAttribute("token", token != null ? token : authentication.getCredentials());
         return "product/product";
     }
 
     @GetMapping("/new")
-    public String getNewProductPage(Model model) {
+    public String getNewProductPage(Model model, @RequestParam(name = "token", required = false) String token) {
         logger.info("Показ формы создания нового продукта");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         model.addAttribute("createNewProductDTO", new CreateNewProductDTO());
+        model.addAttribute("token", token != null ? token : authentication.getCredentials());
         return "product/new";
     }
 
-    // Создание нового продукта (HTML)
     @Operation(summary = "Создание нового продукта", description = "Создаёт новый продукт и перенаправляет на список")
     @PostMapping
     public String createProduct(@Valid @ModelAttribute("createNewProductDTO") CreateNewProductDTO createNewProductDTO,
                                 BindingResult bindingResult,
-                                Model model) {
+                                Model model,
+                                @RequestParam(name = "token", required = false) String token) {
         logger.info("Запрос на создание нового продукта");
         if (bindingResult.hasErrors()) {
             model.addAttribute("createNewProductDTO", createNewProductDTO);
+            model.addAttribute("token", token);
             return "product/new";
         }
-        ProductDTO productDTO = productService.saveProduct(createNewProductDTO);
+        ProductDTO productDTO = productsService.saveProduct(createNewProductDTO);
         model.addAttribute("product", productDTO);
-        return "redirect:/products";
+        model.addAttribute("token", token);
+        return "redirect:/products?token=" + token; // Добавляем token в редирект
     }
 
-    // Поиск продукта по названию (HTML)
     @Operation(summary = "Поиск продукта по названию", description = "Возвращает список продуктов, соответствующих названию")
     @GetMapping("/search")
-    public String searchByName(@RequestParam(required = false) String name, Model model) {
-        logger.info("Запрос на поиск продукта по имени: {}", name);
-        Optional<ProductDTO> product = productService.searchByName(name);
-        if (product.isPresent()) {
-            model.addAttribute("product", product.get());
-            return "product/product_single";
+    public String searchByNameList(@RequestParam String name, Model model,
+                                   @RequestParam(name = "token", required = false) String token) {
+        logger.info("Поиск продукта по имени: {}", name);
+        List<ProductDTO> products = productsService.searchByNameList(name.trim());
+        if (!products.isEmpty()) {
+            model.addAttribute("products", products);
+            model.addAttribute("searchName", name);
         } else {
-            model.addAttribute("error", "Продукт с таким именем не найден");
-            return "redirect:/product";
+            model.addAttribute("error", "Продукты с таким именем не найдены");
         }
+        model.addAttribute("token", token);
+        return "product/productSpecificList";
     }
 }

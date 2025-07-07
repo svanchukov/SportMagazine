@@ -12,11 +12,23 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
   logging:
     level:
       org.springframework: DEBUG
       com.zaxxer.hikari: DEBUG
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    consumer:
+#      group-id: my-consumer-group
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Десериализация ключа
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # Сериализация ключа
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    template:
+#      default-topic: logs
+
 
   application:
     name: product-service
