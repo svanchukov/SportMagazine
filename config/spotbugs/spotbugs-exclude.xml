@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+        xsi:schemaLocation="https://github.com/spotbugs/filter/4.8.4 https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/etc/findbugsfilter.xsd"
+        xmlns="https://github.com/spotbugs/filter/4.8.4"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Package name="~ru[.]atc[.]hibernate[.]ormtypes[.]jsonb([.].*)?"/>
+    </Match>
+    <!-- Exclude MapStruct-generated classes -->
+    <Match>
+        <Package name="~ru[.]atc[.]minec[.]ep[.]efrt[.]mapper[.]historical([.].*)?"/>
+        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+    </Match>
+    <!-- Exclude JAXB-generated classes -->
+    <Match>
+        <Bug pattern="NM_CONFUSING"/>
+        <Package name="~ru[.]atc[.]minec[.]ep[.]efrt[.]schemas[.]ru([.].*)?"/>
+    </Match>
+    <!-- Exclude Schema-annotated classes -->
+    <Match>
+        <Bug pattern="NM_CONFUSING"/>
+        <Annotation name="io.swagger.v3.oas.annotations.media.Schema"/>
+    </Match>
+    <!-- Exclude external CryptoPro code -->
+    <Match>
+        <Class name="ru.atc.minec.ep.efrt.crypto.utils.CMSSign"/>
+        <Method name="addSignerInfos"/>
+        <Bug pattern="DB_DUPLICATE_BRANCHES"/>
+    </Match>
+    <Match>
+        <And>
+            <Package name="~ru[.]atc[.]minec[.]ep[.]efrt[.]smev[.]mapper[.]client([.].*)?"/>
+            <Source name="~.*MapperImpl\.java"/>
+            <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+        </And>
+    </Match>
+    <Match>
+        <Bug pattern="DP_DO_INSIDE_DO_PRIVILEGED"/>
+    </Match>
+</FindBugsFilter>
