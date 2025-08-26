@@ -3,40 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <title>Создание пользователя</title>
+    <style>
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 <h1>Создание нового пользователя</h1>
+
+<!-- Отображение общей ошибки -->
+<div th:if="${error != null}" class="error-message">
+    <span th:text="${error}"></span>
+</div>
+
 <form th:action="@{/users}" th:object="${createNewUserDTO}" method="post">
+    <!-- Имя -->
     <div>
         <label for="name">Имя:</label>
-        <input type="text" id="name" th:field="*{name}" required minlength="1" maxlength="100">
+        <input type="text" id="name" th:field="*{name}" required minlength="3" maxlength="50">
+        <div th:if="${#fields.hasErrors('name')}" style="color:red">
+            <span th:errors="*{name}"></span>
+        </div>
     </div>
+
+    <!-- Email -->
     <div>
         <label for="email">Email:</label>
         <input type="email" id="email" th:field="*{email}" required>
+        <div th:if="${#fields.hasErrors('email')}" style="color:red">
+            <span th:errors="*{email}"></span>
+        </div>
     </div>
+
+    <!-- Телефон -->
     <div>
         <label for="phoneNumber">Телефон:</label>
         <input type="text" id="phoneNumber" th:field="*{phoneNumber}" required
                pattern="^(\\+7[0-9]{10}|8[0-9]{10})$">
-
         <div th:if="${#fields.hasErrors('phoneNumber')}" style="color:red">
-            <span th:each="err : ${#fields.errors('phoneNumber')}" th:text="${err}"></span>
+            <span th:errors="*{phoneNumber}"></span>
         </div>
     </div>
 
+    <!-- Пароль -->
     <div>
         <label for="password">Пароль:</label>
         <input type="password" id="password" th:field="*{password}" required minlength="3">
+        <div th:if="${#fields.hasErrors('password')}" style="color:red">
+            <span th:errors="*{password}"></span>
+        </div>
     </div>
 
     <button type="submit">Создать</button>
-
-    <div th:if="${#fields.hasErrors()}">
-        <ul>
-            <li th:each="err : ${#fields.errors()}" th:text="${err} + ' (поле: ' + ${#fields.errorsForField(err.field)} + ')'"></li>
-        </ul>
-    </div>
+    <a href="/users"><button type="button">Отмена</button></a>
 </form>
 </body>
 </html>

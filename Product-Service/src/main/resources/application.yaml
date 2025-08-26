@@ -17,17 +17,7 @@ spring:
     level:
       org.springframework: DEBUG
       com.zaxxer.hikari: DEBUG
-#  kafka:
-#    bootstrap-servers: localhost:9092
-#    consumer:
-#      group-id: my-consumer-group
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Десериализация ключа
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # Сериализация ключа
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-#    template:
-#      default-topic: logs
+
 
 
   application:
@@ -36,7 +26,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true  # Эта настройка уже правильная
+    baseline-on-migrate: true
+
 
 
 eureka:

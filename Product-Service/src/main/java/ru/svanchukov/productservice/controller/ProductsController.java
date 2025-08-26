@@ -1,7 +1,5 @@
 package ru.svanchukov.productservice.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,13 +20,11 @@ import java.util.List;
 @Controller
 @RequestMapping("/products")
 @RequiredArgsConstructor
-@Tag(name = "ProductsController", description = "Контроллер для управления списком продуктов")
 public class ProductsController {
 
     private final ProductsService productsService;
     private static final Logger logger = LoggerFactory.getLogger(ProductsController.class);
 
-    @Operation(summary = "Получение всех продуктов", description = "Возвращает список всех продуктов")
     @GetMapping
     public String getProductsList(Model model,
                                   @RequestParam(name = "name", required = false) String name,
@@ -57,7 +53,6 @@ public class ProductsController {
         return "product/new";
     }
 
-    @Operation(summary = "Создание нового продукта", description = "Создаёт новый продукт и перенаправляет на список")
     @PostMapping
     public String createProduct(@Valid @ModelAttribute("createNewProductDTO") CreateNewProductDTO createNewProductDTO,
                                 BindingResult bindingResult,
@@ -75,7 +70,6 @@ public class ProductsController {
         return "redirect:/products?token=" + token; // Добавляем token в редирект
     }
 
-    @Operation(summary = "Поиск продукта по названию", description = "Возвращает список продуктов, соответствующих названию")
     @GetMapping("/search")
     public String searchByNameList(@RequestParam String name, Model model,
                                    @RequestParam(name = "token", required = false) String token) {

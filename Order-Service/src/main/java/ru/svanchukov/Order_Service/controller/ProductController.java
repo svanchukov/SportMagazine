@@ -26,9 +26,7 @@ import java.util.NoSuchElementException;
 public class ProductController {
 
     private final ProductService productService;
-    private final KafkaTemplate<String, String> kafkaTemplate; // Добавляем KafkaTemplate
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
-    private static final String TOPIC = "product-events";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Operation(summary = "Получение продукта по ID", description = "Возвращает данные продукта по ID")
@@ -58,23 +56,14 @@ public class ProductController {
         try {
             productService.delete(productId);
             String message = "Продукт с ID " + productId + " удален";
-            kafkaTemplate.send(TOPIC, "delete-product-" + productId, message);
-            logger.info("Отправлено сообщение в Kafka: топик={}, ключ={}, сообщение={}", TOPIC, "delete-product-" + productId, message);
         } catch (Exception e) {
             String errorMessage = "Продукт с ID: " + productId + "не найден для удаления";
-            kafkaTemplate.send(TOPIC, "delete-product-error-" + productId, errorMessage);
-            logger.error("Отправлено сообщение об ошибке в Kafka: топик={}, ключ={}, сообщение={}", TOPIC, "delete-product-error-" + productId, errorMessage);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("test-kafka-error")
-    public ResponseEntity<Void> testKafkaError() {
-        kafkaTemplate.send(TOPIC, "test-error-message");
-        return ResponseEntity.ok().build();
-    }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException exception) {

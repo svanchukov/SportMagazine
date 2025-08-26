@@ -1,18 +1,13 @@
 package ru.svanchukov.Order_Service.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import ru.svanchukov.Order_Service.dto.CreateNewProductDTO;
 import ru.svanchukov.Order_Service.dto.ProductDTO;
 import ru.svanchukov.Order_Service.entity.Product;
 import ru.svanchukov.Order_Service.repository.ProductRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
 
 import java.util.List;
 import java.util.Map;
@@ -24,8 +19,6 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final ObjectMapper objectMapper;
-    private final KafkaService kafkaService;
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
@@ -39,10 +32,8 @@ public class ProductService {
         product.setPrice(createNewProductDTO.getPrice());
         product.setBrand(createNewProductDTO.getBrand());
 
-
         try {
             productRepository.save(product);
-            kafkaService.sendProductCreateEvent(createNewProductDTO.getId(), createNewProductDTO); // KAFKA
             logger.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
         } catch (Exception e) {
             logger.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
@@ -53,61 +44,15 @@ public class ProductService {
     }
 
     public List<ProductDTO> findAll() {
-        try (Jedis jedis = new Jedis("localhost", 6379)) {
-            String cacheKey = "all-products";
-            String cachedProducts = jedis.get(cacheKey);
-            if (cachedProducts != null) {
-                try {
-                    return objectMapper.readValue(cachedProducts, new TypeReference<List<ProductDTO>>() {});
-                } catch (JsonProcessingException e) {
-                    logger.error("Ошибка десериализации списка продуктов из Redis", e);
-                }
-            }
-
-            List<Product> products = productRepository.findAll();
-            List<ProductDTO> productsDTO = products.stream().map(this::mapToDto).collect(Collectors.toList());
-
-            try {
-                String jsonProducts = objectMapper.writeValueAsString(productsDTO);
-                jedis.setex(cacheKey, 3600, jsonProducts);
-            } catch (JsonProcessingException e) {
-                logger.error("Ошибка сериализации списка продуктов для Redis", e);
-            }
-
-            return productsDTO;
-        }
-
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<ProductDTO> findById(Long id) {
-        try (Jedis jedis = new Jedis("localhost", 6379)) {
-            String cacheKey = "product:" + id;
-
-            // Пытаемся получить продукт из Redis
-            String cachedProduct = jedis.get(cacheKey);
-
-            if (cachedProduct != null) {
-                ProductDTO productDTO = objectMapper.readValue(cachedProduct, ProductDTO.class);
-                return Optional.of(productDTO);
-            }
-
-            Optional<ProductDTO> productDTO = productRepository.findById(id).map(this::mapToDto);
-            if (productDTO.isPresent()) {
-                try {
-                    String jsonProduct = objectMapper.writeValueAsString(productDTO.get());
-                    jedis.set(cacheKey, jsonProduct);
-                } catch (JsonProcessingException e) {
-                    logger.error("Ошибка сериализации продукта для Redis", e);
-                }
-                return productDTO;
-            }
-
-            return Optional.empty();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return productRepository.findById(id)
+                .map(this::mapToDto);
     }
 
     public void partialUpdate(Long id, Map<String, Object> updates) {
@@ -127,8 +72,7 @@ public class ProductService {
         });
 
         productRepository.save(product);
-        kafkaService.sendProductUpdateEvent(id, updates); // KAFKA
-
+        // kafkaService.sendProductUpdateEvent(id, updates);
     }
 
     public void delete(Long productId) {
@@ -141,7 +85,7 @@ public class ProductService {
 
         productRepository.deleteById(productId);
         logger.info("Продукт с ID: {} успешно удален", productId);
-        kafkaService.sendProductDeleteEvent(productId); // KAFKA
+        // kafkaService.sendProductDeleteEvent(productId);
     }
 
     public List<ProductDTO> searchByName(String name) {
@@ -166,6 +110,4 @@ public class ProductService {
         dto.setUpdatedAt(product.getUpdatedAt());
         return dto;
     }
-
-
 }

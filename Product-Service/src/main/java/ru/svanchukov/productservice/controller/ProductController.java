@@ -1,6 +1,5 @@
 package ru.svanchukov.productservice.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
-//import ru.svanchukov.productservice.kafka.KafkaLoggingProducer;
 import ru.svanchukov.productservice.service.ProductService;
 
 import java.util.Locale;
@@ -30,24 +28,19 @@ public class ProductController {
 
     private final ProductService productService;
     private final MessageSource messageSource;
-//    private final KafkaLoggingProducer kafkaLoggingProducer; // Инжектируем KafkaLoggingProducer
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     // Загрузка продукта по ID перед каждым запросом
     @ModelAttribute("product")
     public ProductDTO product(@PathVariable("productId") Long productId) {
         logger.info("Запрос на загрузку продукта с ID: {}", productId);
-//        kafkaLoggingProducer.sendLogToKafka("Запрос на загрузку продукта с ID: " + productId); // Отправляем лог в Kafka
         return productService.findById(productId)
                 .orElseThrow(() -> new NoSuchElementException("errors.product.not_found"));
     }
 
-    // Получение продукта по ID (HTML)
-    @Operation(summary = "Получение продукта по ID", description = "Возвращает страницу с данными продукта по ID")
-    @GetMapping
+     @GetMapping
     public String getProduct(@PathVariable("productId") Long id, Model model) {
         logger.info("Запрос на получение продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Запрос на получение продукта с ID: " + id); // Логирование в Kafka
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = (authentication != null) ? authentication.getName() : "Unknown User";
         logger.info("Запрос от пользователя: {}", email);
@@ -59,11 +52,9 @@ public class ProductController {
     }
 
     // Отображение формы для редактирования продукта
-    @Operation(summary = "Показать форму редактирования продукта", description = "Возвращает страницу для редактирования продукта")
     @GetMapping("edit")
     public String getProductEditPage(@PathVariable("productId") Long id, Model model) {
         logger.info("Показ формы редактирования продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Показ формы редактирования продукта с ID: " + id); // Логирование в Kafka
         ProductDTO product = productService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
         UpdateProductDTO updateProductDTO = mapToUpdateDto(product);
@@ -72,7 +63,6 @@ public class ProductController {
     }
 
     // Обновление продукта
-    @Operation(summary = "Обновление продукта по ID", description = "Обновляет продукт с определённым ID")
     @PostMapping("/edit")
     public String updateProduct(@PathVariable("productId") Long id,
                                 @ModelAttribute("updateProductDTO") @Valid UpdateProductDTO updateProductDTO,
@@ -87,16 +77,13 @@ public class ProductController {
         }
 
         productService.updateProduct(id, updateProductDTO);
-//        kafkaLoggingProducer.sendLogToKafka("Обновление продукта с ID: " + id); // Логирование в Kafka
         return "redirect:/products/{productId}"; // Перенаправление на страницу продукта по ID
     }
 
     // Удаление продукта
-    @Operation(summary = "Удаление продукта по ID", description = "Удаляет продукт с определённым ID")
     @PostMapping("delete")
     public String deleteProduct(@PathVariable("productId") Long id) {
         logger.info("Запрос на удаление продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Удаление продукта с ID: " + id); // Логирование в Kafka
         productService.delete(id);
         return "redirect:/products"; // Перенаправляем на список продуктов
     }
