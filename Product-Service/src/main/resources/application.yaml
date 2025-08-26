@@ -16,17 +16,19 @@ spring:
   logging:
     level:
       org.springframework: DEBUG
-      com.zaxxer.hikari: DEBUG
 
 
 
   application:
     name: product-service
 
-  flyway:
+#  flyway:
+#    enabled: false
+#    locations: classpath:db/migration
+#    baseline-on-migrate: true
+  liquibase:
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
     enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
 
 
 
