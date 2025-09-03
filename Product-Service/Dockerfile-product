@@ -1,9 +1,13 @@
-FROM eclipse-temurin:21.0.2_13-jdk-jammy
-
-COPY target/Product-Service-0.0.1-SNAPSHOT.jar /app/product-service.jar
-
-WORKDIR /app
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "/app/product-service.jar"]
+#FROM eclipse-temurin:21-jdk AS build
+#WORKDIR /app
+#
+#COPY product-service/pom.xml .
+#RUN mvn dependency:go-offline -B
+#
+#COPY product-service/src ./src
+#
+#RUN mvn clean package -DskipTests
+#
+#FROM eclipse-temurin:21-jre
+#WORKDIR -app
+#COPY --from=build /app/target/

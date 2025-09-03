@@ -38,7 +38,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
       - SPRING_DATASOURCE_USERNAME=product
       - SPRING_DATASOURCE_PASSWORD=product
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - sportmagazine-network
 

@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * DTO для создания нового продукта.
+ * Используется при приёме данных от клиента для сохранения продукта в системе.
+ */
 @Data
 public class CreateNewProductDTO {
 

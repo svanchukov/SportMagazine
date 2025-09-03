@@ -15,59 +15,88 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для работы с коллекцией пользователей.
+ * Предоставляет методы для получения списка, создания и удаления пользователей.
+ */
 @Service
 @RequiredArgsConstructor
 public class UsersService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsersService.class);
+
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
-    // Получение списка всех пользователей
+    /**
+     * Получение списка всех пользователей.
+     * @return список UserDTO
+     */
     public List<UserDTO> findAll() {
-        List<User> users = userRepository.findAll(); // Получаем всех пользователей
-        return users.stream().map(this::mapToDTO).collect(Collectors.toList()); // Преобразуем в DTO
+        final List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-    // Получение пользователя по ID
-    public Optional<UserDTO> getUserById(UUID id) {
-        return userRepository.findById(id).map(this::mapToDTO); // Получаем пользователя по ID
+    /**
+     * Получение пользователя по ID.
+     * @param id идентификатор пользователя.
+     */
+    public Optional<UserDTO> getUserById(final UUID id) {
+        return userRepository.findById(id)
+                .map(this::mapToDTO);
     }
 
-    // Сохранение нового пользователя
-    public UserDTO saveUser(CreateNewUserDTO createNewUserDTO) {
-        User user = new User();
+    /**
+     * Создание нового пользователя.
+     * @param createNewUserDTO DTO с данными для нового пользователя
+     */
+    public UserDTO saveUser(final CreateNewUserDTO createNewUserDTO) {
+        final User user = new User();
         user.setEmail(createNewUserDTO.getEmail());
         user.setPhoneNumber(createNewUserDTO.getPhoneNumber());
         user.setName(createNewUserDTO.getName());
         user.setPassword(createNewUserDTO.getPassword());
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        // Генерация JWT-токена для пользователя
+        final String token = jwtUtil.generateToken(user.getEmail());
         user.setJwtToken(token);
 
-        userRepository.save(user); // Сохраняем пользователя
-        return mapToDTO(user); // Возвращаем DTO нового пользователя
+        userRepository.save(user);
+        LOGGER.info("Создан новый пользователь: {}", user);
+
+        return mapToDTO(user);
     }
 
-    public void deleteUser(UUID id) {
+    /**
+     * Удаление пользователя по ID.
+     * @param id идентификатор пользователя
+     */
+    public void deleteUser(final UUID id) {
         if (!userRepository.existsById(id)) {
-            logger.warn("Попытка удалить несуществующего пользователя с ID {}", id);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
+            }
             throw new RuntimeException("Пользователь с ID " + id + " не найден");
         }
 
         userRepository.deleteById(id);
-        logger.info("Пользователь с ID {} успешно удалён", id);
+        LOGGER.info("Пользователь с ID {} успешно удалён", id);
     }
 
-    // Преобразование User в UserDTO
-    private UserDTO mapToDTO(User user) {
-        UserDTO dto = new UserDTO();
+    /**
+     * Преобразует сущность User в DTO.
+     * @param user сущность пользователя
+     * @return UserDTO
+     */
+    private UserDTO mapToDTO(final User user) {
+        final UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setName(user.getName());
         dto.setPassword(user.getPassword());
-        return dto; // Возвращаем DTO
+        return dto;
     }
 }

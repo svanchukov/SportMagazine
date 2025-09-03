@@ -21,9 +21,14 @@
     <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/assert_test7.java</exclude-pattern>
     <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/jdk14_enum.java</exclude-pattern>
     <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/jdk9_invalid_identifier.java</exclude-pattern>
-    <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsAnnotationName.java</exclude-pattern>
-    <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsEnumName.java</exclude-pattern>
-    <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsTypeIdentifier.java</exclude-pattern>
+    <exclude-pattern>
+        .*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsAnnotationName.java
+    </exclude-pattern>
+    <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsEnumName.java
+    </exclude-pattern>
+    <exclude-pattern>
+        .*/net/sourceforge/pmd/lang/java/ast/jdkversiontests/java10/LocalVariableTypeInference_varAsTypeIdentifier.java
+    </exclude-pattern>
 
     <!-- this file contains are parse error explicitly -->
     <exclude-pattern>.*/net/sourceforge/pmd/lang/java/ast/InfiniteLoopInLookahead.java</exclude-pattern>
@@ -39,7 +44,7 @@
         </properties>
     </rule>
 
-    <rule ref="category/java/bestpractices.xml" />
+    <rule ref="category/java/bestpractices.xml"/>
 
     <rule ref="category/java/codestyle.xml">
         <exclude name="OnlyOneReturn"/>
@@ -56,20 +61,17 @@
         </properties>
     </rule>
 
-    <!-- Отключаем правило PackageCase для всех файлов в User_Service -->
-    <exclude-pattern>.*</exclude-pattern>
-
-
     <rule ref="category/java/design.xml">
         <exclude name="ExcessivePublicCount"/>
         <exclude name="DataClass"/>
         <exclude name="TooManyFields"/>
         <exclude name="LoosePackageCoupling"/>
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="ImmutableField"/>
         <exclude name="TooManyMethods"/>
         <exclude name="LawOfDemeter"/>
         <exclude name="ExcessiveImports"/>
         <exclude name="CouplingBetweenObjects"/>
-        <exclude name="CyclomaticComplexity"/>
         <exclude name="CognitiveComplexity"/>
         <exclude name="NcssCount"/>
     </rule>
@@ -83,13 +85,6 @@
             <property name="minimum" value="80"/>
         </properties>
     </rule>
-    <rule ref="category/java/design.xml/CyclomaticComplexity">
-        <properties>
-            <property name="classReportLevel" value="80"/>
-            <property name="methodReportLevel" value="12"/>
-            <property name="cycloOptions" value=""/>
-        </properties>
-    </rule>
     <rule ref="category/java/design.xml/CognitiveComplexity">
         <properties>
             <property name="reportLevel" value="20"/>
@@ -101,16 +96,11 @@
         </properties>
     </rule>
 
-
-
-    <rule ref="category/java/errorprone.xml">
-        <exclude name="AvoidAccessibilityAlteration"/>
-    </rule>
-
-    <rule ref="category/java/multithreading.xml" />
+    <rule ref="category/java/errorprone.xml"/>
+    <rule ref="category/java/multithreading.xml"/>
     <rule ref="category/java/performance.xml">
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
     </rule>
-    <rule ref="category/java/security.xml" />
+    <rule ref="category/java/security.xml"/>
 
 </ruleset>

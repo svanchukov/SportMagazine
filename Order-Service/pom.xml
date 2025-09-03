@@ -137,12 +137,7 @@
 		</dependency>
 
 		<!-- Возможно, этот модуль должен быть external или отдельным jar -->
-		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>User-Service</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -157,36 +152,94 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-		</plugins>
-	</build>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.23.0</version>
-				<configuration>
-					<rulesets>
-						<ruleset>/rulesets/java/braces.xml</ruleset>
-						<ruleset>/rulesets/java/naming.xml</ruleset>
-					</rulesets>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.3.1</version>
 				<configuration>
-					<configLocation>google_checks.xml</configLocation>
-					<encoding>UTF-8</encoding>
+					<configLocation>../config/checkstyle/checkstyler.xml</configLocation>
+					<propertyExpansion>
+						suppressionFile=../config/checkstyle/suppressions.xml
+						suppressionXpathFile=../config/checkstyle/suppressions-xpath.xml
+					</propertyExpansion>
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
+					<excludes>**/main/resources/**/*</excludes>
+					<excludes>**/generated/**/*</excludes>
+					<excludes>**/generated-sources/**/*</excludes>
+					<includeTestSourceDirectory>false</includeTestSourceDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<id>checkstyle-validate-sources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Low</threshold>
+					<excludeFilterFile>../config/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase> <!-- Phase in which the plugin should run -->
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<targetJdk>17</targetJdk>
+					<verbose>true</verbose>
 					<linkXRef>false</linkXRef>
+					<failOnViolation>true</failOnViolation>
+					<rulesets>
+						<ruleset>../config/pmd/pmd-ruleset.xml</ruleset>
+						<ruleset>../config/pmd/excluded-pmd-ruleset.xml</ruleset>
+					</rulesets>
+					<excludes>
+						<exclude>**/generated/*.java</exclude>
+						<exclude>**/generated-sources/*.java</exclude>
+					</excludes>
+					<excludeRoots>
+						<excludeRoot>target/classes</excludeRoot>
+						<excludeRoot>target/generated-sources</excludeRoot>
+					</excludeRoots>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.36</version> <!-- Fixed version -->
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>
-	</reporting>
+	</build>
 
 </project>

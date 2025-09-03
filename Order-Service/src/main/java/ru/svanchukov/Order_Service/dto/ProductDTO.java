@@ -7,6 +7,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO нового продукта.
+ */
 @Data
 public class ProductDTO {
 

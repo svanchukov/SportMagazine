@@ -1,9 +1,6 @@
 package ru.svanchukov.productservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +15,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+    Сервис для работы с продуктами.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProductsService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
+
     private final ProductRepository productRepository;
     private final ObjectMapper objectMapper;
 
-    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
-
-    public ProductDTO saveProduct(CreateNewProductDTO createNewProductDTO) {
-        logger.info("Создание нового продукта: {}", createNewProductDTO.getName());
+    /**
+     * Создание и сохранение нового продукта.
+     */
+    public ProductDTO saveProduct(final CreateNewProductDTO createNewProductDTO) {
+        LOGGER.info("Создание нового продукта: {}", createNewProductDTO.getName());
 
         Product product = new Product();
         product.setName(createNewProductDTO.getName());
@@ -37,36 +40,43 @@ public class ProductsService {
         product.setPrice(createNewProductDTO.getPrice());
         product.setBrand(createNewProductDTO.getBrand());
 
-
         try {
             productRepository.save(product);
-            logger.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
+            LOGGER.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
         } catch (Exception e) {
-            logger.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
+            LOGGER.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
             throw new RuntimeException("Ошибка при сохранении продукта", e);
         }
 
         return mapToDto(product);
     }
 
+    /**
+     * Получение всех продуктов из базы.
+     */
     public List<ProductDTO> findAll() {
-        logger.info("Запрос на получение всех продуктов");
+        LOGGER.info("Запрос на получение всех продуктов");
         List<Product> products = productRepository.findAll();
-        logger.info("Найдено {} продуктов", products.size());
+        LOGGER.info("Найдено {} продуктов", products.size());
         return products.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    /**
+     * Поиск продукта по его ID.
+     */
     public Optional<ProductDTO> findById(Long id) {
-        logger.info("Данные получены из базы для ID: {}", id);
+        LOGGER.info("Данные получены из базы для ID: {}", id);
         return productRepository.findById(id).map(this::mapToDto);
     }
 
-
-    public void updateProduct(Long id, UpdateProductDTO updateProductDTO) {
-        logger.info("Запрос на обновление продукта с ID: {}", id);
+    /**
+     * Обновление данных существующего продукта.
+     */
+    public void updateProduct(Long id, final UpdateProductDTO updateProductDTO) {
+        LOGGER.info("Запрос на обновление продукта с ID: {}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    logger.error("Продукт с ID {} не найден для обновления", id);
+                    LOGGER.error("Продукт с ID {} не найден для обновления", id);
                     return new RuntimeException("Продукт с ID " + id + " не найден");
                 });
 
@@ -76,22 +86,27 @@ public class ProductsService {
         product.setPrice(updateProductDTO.getPrice());
 
         productRepository.save(product);
-        logger.info("Продукт с ID: {} успешно обновлен", id);
+        LOGGER.info("Продукт с ID: {} успешно обновлен", id);
     }
 
+    /**
+     * Удаление продукта по ID.
+     */
     public void delete(Long productId) {
-        logger.info("Запрос на удаление продукта с ID: {}", productId);
+        LOGGER.info("Запрос на удаление продукта с ID: {}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> {
-                    logger.error("Продукт с ID {} не найден для удаления", productId);
+                    LOGGER.error("Продукт с ID {} не найден для удаления", productId);
                     return new RuntimeException("Продукт с ID " + productId + " не найден");
                 });
 
         productRepository.deleteById(productId);
-        logger.info("Продукт с ID: {} успешно удален", productId);
+        LOGGER.info("Продукт с ID: {} успешно удален", productId);
     }
 
-    // Список продуктов по фильтру (или все)
+    /**
+     * Поиск продуктов по имени (или список всех подходящих).
+     */
     public List<ProductDTO> searchByNameList(String name) {
         return productRepository.findAllByName(name)
                 .stream()
@@ -99,6 +114,9 @@ public class ProductsService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Преобразование сущности Product в DTO.
+     */
     private ProductDTO mapToDto(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId((long) product.getId());

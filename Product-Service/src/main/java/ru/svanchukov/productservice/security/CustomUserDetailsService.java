@@ -8,6 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+/**
+ * Кастомная реализация UserDetailsService для Spring Security.
+ * <p>
+ * Используется для загрузки данных о пользователе по его email.
+ * В текущей реализации возвращается заглушка с пустым паролем и без ролей.
+ * </p>
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 

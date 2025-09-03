@@ -1,5 +1,7 @@
 package ru.svanchukov.productservice.security.jwt;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,50 +16,82 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * Фильтр для аутентификации запросов на основе JWT.
+ * <p>
+ * Извлекает токен из заголовка Authorization или параметра запроса,
+ * валидирует его и помещает пользователя в SecurityContextHolder.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final int BEARER_PREFIX_LENGTH = 7;
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Конструктор фильтра.
+     * @param jwtUtil           утилита для работы с JWT
+     * @param userDetailsService сервис для загрузки данных пользователя
+     */
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Основная логика фильтра.
+     * Извлекает JWT из запроса, валидирует его и добавляет аутентификацию в контекст.
+     * @param request  HTTP-запрос
+     * @param response HTTP-ответ
+     * @param chain    цепочка фильтров
+     * @throws ServletException если ошибка фильтрации
+     * @throws IOException      если ошибка ввода/вывода
+     */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(final HttpServletRequest request,
+                                    final HttpServletResponse response,
+                                    final FilterChain chain)
             throws ServletException, IOException {
         String token = null;
         String authHeader = request.getHeader("Authorization");
-        System.out.println("Request URL: " + request.getRequestURL() + "?" + request.getQueryString());
-        System.out.println("Authorization header: " + authHeader);
+
+        LOGGER.info("Request URL: {}?{}", request.getRequestURL(), request.getQueryString());
+        LOGGER.debug("Authorization header: {}", authHeader);
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            System.out.println("Token from header: " + token);
+            token = authHeader.substring(BEARER_PREFIX_LENGTH);
+            LOGGER.debug("Token from header: {}", token);
         }
+
         if (token == null) {
             token = request.getParameter("token");
-            System.out.println("Token from parameter: " + token);
+            LOGGER.debug("Token from parameter: {}", token);
         }
+
         if (token != null && jwtUtil.validateToken(token)) {
             String username = jwtUtil.getUsernameFromToken(token);
-            System.out.println("Username from token: " + username);
-            UserDetails userDetails;
+            LOGGER.info("Username from token: {}", username);
+
             try {
-                userDetails = userDetailsService.loadUserByUsername(username);
-                System.out.println("UserDetails loaded: " + userDetails.getUsername());
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                LOGGER.info("UserDetails loaded: {}", userDetails.getUsername());
+
+                CustomAuthenticationToken authentication = new CustomAuthenticationToken(userDetails);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                LOGGER.debug("Authentication set with principal: {}", authentication.getPrincipal());
+
             } catch (Exception e) {
-                System.out.println("Failed to load UserDetails: " + e.getMessage());
+                LOGGER.error("Failed to load UserDetails for username {}: {}", username, e.getMessage());
                 chain.doFilter(request, response);
                 return;
             }
-            CustomAuthenticationToken authentication = new CustomAuthenticationToken(userDetails);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("Authentication set with principal: " + authentication.getPrincipal());
         } else {
-            System.out.println("Invalid or missing token: " + token);
+            LOGGER.warn("Invalid or missing token: {}", token);
         }
+
         chain.doFilter(request, response);
     }
 }

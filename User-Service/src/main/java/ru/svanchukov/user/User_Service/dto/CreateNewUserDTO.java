@@ -6,11 +6,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.util.UUID;
-
+/**
+ * DTO для создания нового пользователя.
+ */
 @Data
 public class CreateNewUserDTO {
-    
+
     @NotBlank
     @Size(min = 3, max = 50, message = "Имя должно иметь не меньше 3 символов и не больше 50 символов")
     private String name;
@@ -20,7 +21,10 @@ public class CreateNewUserDTO {
     private String email;
 
     @NotBlank(message = "Номер телефона обязателен")
-    @Pattern(regexp = "^(\\+7[0-9]{9,10}|8[0-9]{9,10})$", message = "Номер телефона должен начинаться с 8 и содержать 11 цифр")
+    @Pattern(
+            regexp = "^(\\+7[0-9]{9,10}|8[0-9]{9,10})$",
+            message = "Номер телефона должен начинаться с 8 и содержать 11 цифр"
+    )
     private String phoneNumber;
 
     @NotBlank(message = "Пароль не должен быть пустым")

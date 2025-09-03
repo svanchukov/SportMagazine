@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ Обновление нового продукта DTO.
+ */
 @Data
 public class UpdateProductDTO {
 

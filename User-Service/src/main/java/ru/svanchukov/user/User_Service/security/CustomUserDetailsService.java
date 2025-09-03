@@ -10,15 +10,24 @@ import ru.svanchukov.user.User_Service.repository.UserRepository;
 
 import java.util.Collections;
 
+/**
+ * Сервис для загрузки пользовательских данных для Spring Security.
+ * Используется для аутентификации по email.
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Загружает пользователя по email для Spring Security.
+     * @param email email пользователя
+     * @throws UsernameNotFoundException если пользователь с указанным email не найден
+     */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var user = userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(final String email) {
+        final User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + email));
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
