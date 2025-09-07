@@ -10,7 +10,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@SuppressWarnings("checkstyle:FinalClass")
+@SuppressWarnings("PMD.UseUtilityClass")
 public class UserServiceApplication {
 
 	/**
