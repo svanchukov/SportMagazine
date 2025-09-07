@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jdk-jammy
 
 WORKDIR /app
 
-COPY target/User-Service-0.0.1-SNAPSHOT.jar.original app.jar
+COPY target/User-Service-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 
