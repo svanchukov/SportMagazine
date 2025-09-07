@@ -10,32 +10,45 @@ import ru.svanchukov.productservice.dto.product.CreateNewProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 
-import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+/**
+ * Реализация {ProductRestClient} с использованием {RestClient}.
+ */
 @RequiredArgsConstructor
 public class RestClientProductRestClientImpl implements ProductRestClient {
 
     private static final ParameterizedTypeReference<List<ProductDTO>> PRODUCT_TYPE_REFERENCE =
-            new ParameterizedTypeReference<List<ProductDTO>>() {};
-
+            new ParameterizedTypeReference<List<ProductDTO>>() { };
 
     private final RestClient restClient;
 
+    /**
+     * Возвращает список продуктов с фильтрацией по имени.
+     */
     @Override
     public List<ProductDTO> findAllProduct(String name) {
-        return this.restClient
+        List<ProductDTO> products = this.restClient
                 .get()
                 .uri("order-api/products?name={name}", name)
                 .retrieve()
                 .body(PRODUCT_TYPE_REFERENCE);
+        if (products == null) {
+            return Collections.emptyList();
+        }
+        return products;
     }
 
+
+    /**
+     * Создает новый продукт.
+     */
     @Override
-    public ProductDTO createProduct(String name, String category, String descriptions, Double price, String brand) {
-        CreateNewProductDTO newProductDTO = new CreateNewProductDTO();
+    public ProductDTO createProduct(final String name, final String category, final String descriptions, final Double price, final String brand) {
+        final CreateNewProductDTO newProductDTO = new CreateNewProductDTO();
         newProductDTO.setName(name);
         newProductDTO.setCategory(category);
         newProductDTO.setDescriptions(descriptions);
@@ -50,6 +63,9 @@ public class RestClientProductRestClientImpl implements ProductRestClient {
                 .body(ProductDTO.class);
     }
 
+    /**
+     * Ищет продукт по ID.
+     */
     @Override
     public Optional<ProductDTO> findProductById(int productId) {
         try {
@@ -62,6 +78,9 @@ public class RestClientProductRestClientImpl implements ProductRestClient {
         }
     }
 
+    /**
+     * Обновляет продукт.
+     */
     @Override
     public void updateProduct(int productId, String name, String category, String descriptions, Double price, String brand) {
         try {
@@ -72,11 +91,22 @@ public class RestClientProductRestClientImpl implements ProductRestClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (HttpClientErrorException.BadRequest exception) {
-            ProblemDetail problemDetail = exception.getResponseBodyAs(ProblemDetail.class);
-            throw new BadRequestException((List<String>) problemDetail.getProperties().get("errors"));
+            final ProblemDetail problemDetail = exception.getResponseBodyAs(ProblemDetail.class);
+
+            List<String> errors = Optional.ofNullable(problemDetail)
+                    .map(ProblemDetail::getProperties)
+                    .map(props -> props.get("errors"))
+                    .filter(List.class::isInstance)
+                    .map(obj -> (List<String>) obj)
+                    .orElse(null);
+
+            throw new BadRequestException("Bad request when updating product", exception, errors);
         }
     }
 
+    /**
+     * Удаляет продукт по ID.
+     */
     @Override
     public void deleteProduct(int productId) {
         try {

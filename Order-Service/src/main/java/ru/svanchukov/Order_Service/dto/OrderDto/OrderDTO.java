@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO нового заказа.
+ */
 @Data
 public class OrderDTO {
     private Long id;

@@ -1,6 +1,5 @@
 package ru.svanchukov.productservice.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,43 +13,51 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
-//import ru.svanchukov.productservice.kafka.KafkaLoggingProducer;
 import ru.svanchukov.productservice.service.ProductService;
 
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
+/**
+ * Контроллер для управления операциями над определённым продуктом.
+ */
 @Controller
 @RequestMapping("products/{productId:\\d+}")
 @RequiredArgsConstructor
 public class ProductController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductController.class);
+
     private final ProductService productService;
     private final MessageSource messageSource;
-//    private final KafkaLoggingProducer kafkaLoggingProducer; // Инжектируем KafkaLoggingProducer
-    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
-    // Загрузка продукта по ID перед каждым запросом
+    /**
+     * Загружает продукт по ID перед каждым запросом и добавляет его в модель под атрибутом.
+     */
     @ModelAttribute("product")
     public ProductDTO product(@PathVariable("productId") Long productId) {
-        logger.info("Запрос на загрузку продукта с ID: {}", productId);
-//        kafkaLoggingProducer.sendLogToKafka("Запрос на загрузку продукта с ID: " + productId); // Отправляем лог в Kafka
+        LOGGER.info("Запрос на загрузку продукта с ID: {}", productId);
         return productService.findById(productId)
                 .orElseThrow(() -> new NoSuchElementException("errors.product.not_found"));
     }
 
-    // Получение продукта по ID (HTML)
-    @Operation(summary = "Получение продукта по ID", description = "Возвращает страницу с данными продукта по ID")
+    /**
+     * Получение страницы с подробной информацией о продукте.
+     */
     @GetMapping
     public String getProduct(@PathVariable("productId") Long id, Model model) {
-        logger.info("Запрос на получение продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Запрос на получение продукта с ID: " + id); // Логирование в Kafka
+        LOGGER.info("Запрос на получение продукта с ID: {}", id);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = (authentication != null) ? authentication.getName() : "Unknown User";
-        logger.info("Запрос от пользователя: {}", email);
+        LOGGER.info("Запрос от пользователя: {}", email);
 
         ProductDTO product = productService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
@@ -58,12 +65,16 @@ public class ProductController {
         return "product/productDetails";
     }
 
-    // Отображение формы для редактирования продукта
-    @Operation(summary = "Показать форму редактирования продукта", description = "Возвращает страницу для редактирования продукта")
+    /**
+     * Показ формы редактирования продукта.
+     *
+     * @param id    идентификатор продукта
+     * @param model модель для передачи данных в представление
+     * @return имя HTML-шаблона страницы редактирования
+     */
     @GetMapping("edit")
     public String getProductEditPage(@PathVariable("productId") Long id, Model model) {
-        logger.info("Показ формы редактирования продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Показ формы редактирования продукта с ID: " + id); // Логирование в Kafka
+        LOGGER.info("Показ формы редактирования продукта с ID: {}", id);
         ProductDTO product = productService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
         UpdateProductDTO updateProductDTO = mapToUpdateDto(product);
@@ -71,40 +82,53 @@ public class ProductController {
         return "product/edit";
     }
 
-    // Обновление продукта
-    @Operation(summary = "Обновление продукта по ID", description = "Обновляет продукт с определённым ID")
+    /**
+     * Обновление информации о продукте.
+     *
+     * @param id               идентификатор продукта
+     * @param updateProductDTO данные для обновления
+     * @param bindingResult    результат валидации
+     * @param model            модель для передачи ошибок (если есть)
+     * @return редирект на страницу продукта или форма редактирования при ошибках
+     */
     @PostMapping("/edit")
-    public String updateProduct(@PathVariable("productId") Long id,
-                                @ModelAttribute("updateProductDTO") @Valid UpdateProductDTO updateProductDTO,
-                                BindingResult bindingResult,
-                                Model model) {
-        logger.info("Запрос на обновление продукта с ID: {}", id);
+    public String updateProduct(final @PathVariable("productId") Long id,
+                                final @ModelAttribute("updateProductDTO") @Valid UpdateProductDTO updateProductDTO,
+                                final BindingResult bindingResult,
+                                final Model model) {
+        LOGGER.info("Запрос на обновление продукта с ID: {}", id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
                     .map(ObjectError::getDefaultMessage)
                     .toList());
-            return "product/edit";  // Возвращаем форму редактирования, если есть ошибки
+            return "product/edit";  // Возврат формы редактирования, если есть ошибки
         }
 
         productService.updateProduct(id, updateProductDTO);
-//        kafkaLoggingProducer.sendLogToKafka("Обновление продукта с ID: " + id); // Логирование в Kafka
-        return "redirect:/products/{productId}"; // Перенаправление на страницу продукта по ID
+        return "redirect:/products/{productId}";
     }
 
-    // Удаление продукта
-    @Operation(summary = "Удаление продукта по ID", description = "Удаляет продукт с определённым ID")
+    /**
+     * Удаление продукта по ID.
+     *
+     * @param id идентификатор продукта
+     * @return редирект на список продуктов
+     */
     @PostMapping("delete")
     public String deleteProduct(@PathVariable("productId") Long id) {
-        logger.info("Запрос на удаление продукта с ID: {}", id);
-//        kafkaLoggingProducer.sendLogToKafka("Удаление продукта с ID: " + id); // Логирование в Kafka
+        LOGGER.info("Запрос на удаление продукта с ID: {}", id);
         productService.delete(id);
-        return "redirect:/products"; // Перенаправляем на список продуктов
+        return "redirect:/products";
     }
 
-    // Обработчик ошибок (HTML)
+    /**
+     * Обработка исключения при отсутствии продукта в базе.
+     */
     @ExceptionHandler(NoSuchElementException.class)
-    public String handleNoSuchElementException(NoSuchElementException exception, Model model,
-                                               HttpServletResponse response, Locale locale) {
+    public String handleNoSuchElementException(NoSuchElementException exception,
+                                               Model model,
+                                               HttpServletResponse response,
+                                               Locale locale) {
         response.setStatus(HttpStatus.NOT_FOUND.value());
         model.addAttribute("error",
                 this.messageSource.getMessage(exception.getMessage(), new Object[0],
@@ -112,7 +136,12 @@ public class ProductController {
         return "product/error";
     }
 
-    // Вспомогательный метод для маппинга ProductDTO в UpdateProductDTO
+    /**
+     * Преобразует {@link ProductDTO} в {@link UpdateProductDTO} для редактирования.
+     *
+     * @param product DTO продукта
+     * @return DTO для обновления
+     */
     private UpdateProductDTO mapToUpdateDto(ProductDTO product) {
         return new UpdateProductDTO(
                 product.getName(),

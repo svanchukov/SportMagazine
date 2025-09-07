@@ -7,37 +7,52 @@ import org.springframework.stereotype.Service;
 import ru.svanchukov.user.User_Service.dto.UpdateUserDTO;
 import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.entity.User;
+import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Сервис для работы с пользователями.
+ * Предоставляет методы для получения, обновления и удаления пользователей.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository userRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    /**
+     * Получение пользователя по ID.
+     * @param id идентификатор пользователя
+     */
+    public Optional<UserDTO> findById(final UUID id) {
+        final Optional<UserDTO> user = userRepository.findById(id).map(this::mapToDTO);
 
-    // Получение пользователя по ID
-    public Optional<UserDTO> findById(UUID id) {
-        Optional<UserDTO> user = userRepository.findById(id).map(this::mapToDTO);
         if (user.isPresent()) {
-            logger.info("Пользователь найден по ID {}: {}", id, user.get());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Пользователь найден по ID {}: {}", id, user.get());
+            }
         } else {
-            logger.warn("Пользователь с ID {} не найден", id);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("Пользователь с ID {} не найден", id);
+            }
         }
         return user;
     }
 
-    // Получение данных для редактирования пользователя
-    public UpdateUserDTO getUpdateUserDTO(UUID userId) {
-        UserDTO userDTO = findById(userId)
-                .orElseThrow(() -> new RuntimeException("Пользователь с ID " + userId + " не найден"));
+    /**
+     * Получение данных для редактирования пользователя.
+     * @param userId идентификатор пользователя
+     */
+    public UpdateUserDTO getUpdateUserDTO(final UUID userId) {
+        final UserDTO userDTO = findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + userId + " не найден"));
 
-        // Создаем UpdateUserDTO и заполняем его данными из UserDTO
-        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
+        final UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setName(userDTO.getName());
         updateUserDTO.setEmail(userDTO.getEmail());
         updateUserDTO.setPhoneNumber(userDTO.getPhoneNumber());
@@ -46,12 +61,19 @@ public class UserService {
         return updateUserDTO;
     }
 
-    // Обновление пользователя
-    public void updateUser(UUID id, UpdateUserDTO updateUserDTO) {
-        User user = userRepository.findById(id).orElseThrow(() -> {
-            logger.error("Пользователь с ID {} не найден для обновления", id);
-            return new RuntimeException("Пользователь с ID " + id + " не найден");
-        });
+    /**
+     * Обновление данных пользователя.
+     * @param id идентификатор пользователя
+     * @param updateUserDTO данные для обновления
+     */
+    public void updateUser(final UUID id, final UpdateUserDTO updateUserDTO) {
+        final User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("Пользователь с ID {} не найден для обновления", id);
+                    }
+                    return new UserNotFoundException("Пользователь с ID " + id + " не найден");
+                });
 
         user.setEmail(updateUserDTO.getEmail());
         user.setName(updateUserDTO.getName());
@@ -59,23 +81,38 @@ public class UserService {
         user.setPassword(updateUserDTO.getPassword());
 
         userRepository.save(user);
-        logger.info("Пользователь обновлён: {}", user);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Пользователь обновлён: {}", user);
+        }
     }
 
-    // Удаление пользователя
-    public void deleteUser(UUID id) {
+    /**
+     * Удаление пользователя по ID.
+     * @param id идентификатор пользователя
+     */
+    public void deleteUser(final UUID id) {
         if (!userRepository.existsById(id)) {
-            logger.warn("Попытка удалить несуществующего пользователя с ID {}", id);
-            throw new RuntimeException("Пользователь с ID " + id + " не найден");
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
+            }
+            throw new UserNotFoundException("Пользователь с ID " + id + " не найден");
         }
 
         userRepository.deleteById(id);
-        logger.info("Пользователь с ID {} успешно удалён", id);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Пользователь с ID {} успешно удалён", id);
+        }
     }
 
-    // Преобразование User в UserDTO
-    private UserDTO mapToDTO(User user) {
-        UserDTO dto = new UserDTO();
+    /**
+     * Преобразует сущность User в DTO.
+     * @param user сущность пользователя
+     * @return UserDTO
+     */
+    private UserDTO mapToDTO(final User user) {
+        final UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
