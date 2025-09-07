@@ -3,6 +3,8 @@ package ru.svanchukov.Order_Service.service;
 import ru.svanchukov.Order_Service.dto.CreateNewProductDTO;
 import ru.svanchukov.Order_Service.dto.ProductDTO;
 import ru.svanchukov.Order_Service.entity.Product;
+import ru.svanchukov.Order_Service.handler.ProductNotFoundException;
+import ru.svanchukov.Order_Service.handler.ProductSavingException;
 import ru.svanchukov.Order_Service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -44,7 +46,7 @@ public class ProductService {
             LOGGER.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
         } catch (Exception e) {
             LOGGER.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
-            throw new RuntimeException("Ошибка при сохранении продукта", e);
+            throw new ProductSavingException("Ошибка при сохранении продукта");
         }
 
         return mapToDto(product);
@@ -98,10 +100,10 @@ public class ProductService {
      */
     public void delete(final Long productId) {
         LOGGER.info("Запрос на удаление продукта с ID: {}", productId);
-        final Product product = productRepository.findById(productId)
+        productRepository.findById(productId)
                 .orElseThrow(() -> {
                     LOGGER.error("Продукт с ID {} не найден для удаления", productId);
-                    return new RuntimeException("Продукт с ID " + productId + " не найден");
+                    return new ProductNotFoundException("Продукт с ID " + productId + " не найден");
                 });
 
         productRepository.deleteById(productId);

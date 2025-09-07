@@ -10,11 +10,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-public final class OrderServiceApplication {
-
-	private OrderServiceApplication() {
-		// Приватный конструктор предотвращает создание экземпляра класса
-	}
+@SuppressWarnings("checkstyle:FinalClass")
+public class OrderServiceApplication {
 
 	/**
 	 * Точка входа в приложение.

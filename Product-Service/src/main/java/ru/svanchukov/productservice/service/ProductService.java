@@ -9,6 +9,8 @@ import ru.svanchukov.productservice.dto.product.CreateNewProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.entity.Product;
+import ru.svanchukov.productservice.handler.ProductNotFoundException;
+import ru.svanchukov.productservice.handler.ProductSavingException;
 import ru.svanchukov.productservice.repository.ProductRepository;
 
 import java.util.List;
@@ -48,7 +50,7 @@ public class ProductService {
             LOGGER.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
         } catch (Exception e) {
             LOGGER.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
-            throw new RuntimeException("Ошибка при сохранении продукта", e);
+            throw new ProductSavingException("Ошибка при сохранении продукта: " + createNewProductDTO.getName());
         }
 
         return mapToDto(product);
@@ -111,11 +113,11 @@ public class ProductService {
      */
     public void delete(Long productId) {
         LOGGER.info("Запрос на удаление продукта с ID: {}", productId);
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    LOGGER.error("Продукт с ID {} не найден для удаления", productId);
-                    return new RuntimeException("Продукт с ID " + productId + " не найден");
-                });
+
+        if (!productRepository.existsById(productId)) {
+            LOGGER.error("Продукт с ID {} не найден для удаления", productId);
+            throw new ProductNotFoundException("Продукт с ID " + productId + " не найден");
+        }
 
         productRepository.deleteById(productId);
         LOGGER.info("Продукт с ID: {} успешно удален", productId);
@@ -142,7 +144,7 @@ public class ProductService {
      * @return DTO продукта
      */
     private ProductDTO mapToDto(Product product) {
-        ProductDTO dto = new ProductDTO();
+        final ProductDTO dto = new ProductDTO();
         dto.setId((long) product.getId());
         dto.setName(product.getName());
         dto.setBrand(product.getBrand());

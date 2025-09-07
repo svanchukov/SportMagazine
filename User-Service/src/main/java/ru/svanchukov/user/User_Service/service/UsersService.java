@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.svanchukov.user.User_Service.dto.CreateNewUserDTO;
 import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.entity.User;
+import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
 import ru.svanchukov.user.User_Service.security.jwt.JwtUtil;
 
@@ -78,7 +79,7 @@ public class UsersService {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
             }
-            throw new RuntimeException("Пользователь с ID " + id + " не найден");
+            throw new UserNotFoundException("Пользователь с ID " + id + " не найден");
         }
 
         userRepository.deleteById(id);

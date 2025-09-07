@@ -10,11 +10,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-public final class UserServiceApplication {
-
-	private UserServiceApplication() {
-
-	}
+@SuppressWarnings("checkstyle:FinalClass")
+public class UserServiceApplication {
 
 	/**
 	 * Точка входа в приложение.

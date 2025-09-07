@@ -3,8 +3,8 @@ package ru.svanchukov.Order_Service.service;
 import ru.svanchukov.Order_Service.dto.CreateNewProductDTO;
 import ru.svanchukov.Order_Service.dto.ProductDTO;
 import ru.svanchukov.Order_Service.entity.Product;
+import ru.svanchukov.Order_Service.handler.ProductSavingException;
 import ru.svanchukov.Order_Service.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,6 @@ public class ProductsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
     private final ProductRepository productRepository;
-    private final ObjectMapper objectMapper;
 
     /**
      * Сохраняет новый продукт в базе данных.
@@ -42,7 +41,7 @@ public class ProductsService {
             LOGGER.info("Продукт с именем {} успешно сохранен", createNewProductDTO.getName());
         } catch (Exception e) {
             LOGGER.error("Ошибка при сохранении продукта: {}", createNewProductDTO.getName(), e);
-            throw new RuntimeException("Ошибка при сохранении продукта", e);
+            throw new ProductSavingException("Ошибка при сохранении продукта");
         }
 
         return mapToDto(product);

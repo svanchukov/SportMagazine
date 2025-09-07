@@ -12,6 +12,8 @@ import java.util.Collections;
  */
 public class CustomAuthenticationToken extends AbstractAuthenticationToken {
 
+    private static final long serialVersionUID = 1L;
+
     private final UserDetails userDetails;
 
     /**

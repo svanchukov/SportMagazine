@@ -10,6 +10,7 @@ import ru.svanchukov.productservice.dto.product.CreateNewProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,12 +31,17 @@ public class RestClientProductRestClientImpl implements ProductRestClient {
      */
     @Override
     public List<ProductDTO> findAllProduct(String name) {
-        return this.restClient
+        List<ProductDTO> products = this.restClient
                 .get()
                 .uri("order-api/products?name={name}", name)
                 .retrieve()
                 .body(PRODUCT_TYPE_REFERENCE);
+        if (products == null) {
+            return Collections.emptyList();
+        }
+        return products;
     }
+
 
     /**
      * Создает новый продукт.
@@ -86,8 +92,15 @@ public class RestClientProductRestClientImpl implements ProductRestClient {
                     .toBodilessEntity();
         } catch (HttpClientErrorException.BadRequest exception) {
             final ProblemDetail problemDetail = exception.getResponseBodyAs(ProblemDetail.class);
-            throw new BadRequestException("Bad request when updating product", exception,
-                    (List<String>) problemDetail.getProperties().get("errors"));
+
+            List<String> errors = Optional.ofNullable(problemDetail)
+                    .map(ProblemDetail::getProperties)
+                    .map(props -> props.get("errors"))
+                    .filter(List.class::isInstance)
+                    .map(obj -> (List<String>) obj)
+                    .orElse(null);
+
+            throw new BadRequestException("Bad request when updating product", exception, errors);
         }
     }
 
