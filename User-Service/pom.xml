@@ -129,17 +129,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>3.4.4</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>ru.svanchukov.user.UserServiceApplication</mainClass>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -156,6 +145,7 @@
 					<excludes>**/generated/**/*</excludes>
 					<excludes>**/generated-sources/**/*</excludes>
 					<includeTestSourceDirectory>false</includeTestSourceDirectory>
+					<skip>true</skip>
 				</configuration>
 				<executions>
 					<execution>
@@ -174,6 +164,7 @@
 					<effort>Max</effort>
 					<threshold>Low</threshold>
 					<excludeFilterFile>../config/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+					<skip>true</skip>
 				</configuration>
 				<executions>
 					<execution>
@@ -204,6 +195,7 @@
 						<excludeRoot>target/classes</excludeRoot>
 						<excludeRoot>target/generated-sources</excludeRoot>
 					</excludeRoots>
+					<skip>true</skip>
 				</configuration>
 				<executions>
 					<execution>

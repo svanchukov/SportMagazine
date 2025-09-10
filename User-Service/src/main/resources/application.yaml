@@ -7,12 +7,12 @@ spring:
     name: User-Service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/user
-    username: user
-    password: user
-    driver-class-name: org.postgresql.Driver
+    url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
+    username: ${NAME_POSTGRES:user}
+    password: ${PASSWORD_POSTGRES:user}
+    driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
     hikari:
-      maximum-pool-size: 10  # опционально
+      maximum-pool-size: ${POOL_SIZE:10}  # опционально
 
   jpa:
     hibernate:
