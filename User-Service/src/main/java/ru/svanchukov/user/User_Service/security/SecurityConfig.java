@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
 import ru.svanchukov.user.User_Service.handler.SecurityConfigurationException;
 
 /**
@@ -30,26 +32,46 @@ public class SecurityConfig {
      * @throws Exception в случае ошибки конфигурации
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http,
-                                                   final CustomLoginSuccessHandler customLoginSuccessHandler) {
-        try {
-            http
-                    .authorizeHttpRequests((requests) -> requests
-                            .requestMatchers("/users", "/users/new", "/login").permitAll()
-                            .anyRequest().authenticated()
-                    )
-                    .formLogin((form) -> form
-                            .loginPage("/login")
-                            .successHandler(customLoginSuccessHandler) // Используем кастомный обработчик
-                            .permitAll()
-                    )
-                    .logout(LogoutConfigurer::permitAll)
-                    .csrf().disable();
-            return http.build();
-        } catch (Exception e) {
-            throw new SecurityConfigurationException("Ошибка конфигурации Spring Security", e);
-        }
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            CustomLoginSuccessHandler customLoginSuccessHandler) throws Exception {
+        http
+                .authorizeHttpRequests((requests) -> requests
+                        // Статические ресурсы
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 
+                        // Public endpoints
+                        .requestMatchers("/users", "/users/new", "/login", "/register").permitAll()
+
+                        // Actuator health и info - для всех
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+
+                        // Остальные actuator endpoints - только для аутентифицированных пользователей
+                        .requestMatchers("/actuator", "/actuator/**").hasRole("ADMIN")
+
+                        // Все остальные запросы требуют аутентификации
+                        .anyRequest().authenticated()
+                )
+                // остальная конфигурация без изменений
+                .formLogin((form) -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler(customLoginSuccessHandler)
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+                .logout((logout) -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .permitAll()
+                )
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/actuator/health", "/actuator/health/**")
+                );
+
+        return http.build();
     }
 
     /**
