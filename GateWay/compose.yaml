@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  gateway-service:
+    build:
+      context: .   # путь к проекту eureka
+      dockerfile: Dockerfile     # можно указать, если Dockerfile не в корне
+    container_name: gateway-service
+    ports:
+      - "8765:8765"
+    networks:
+      - gateway-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-Xms256m -Xmx512m
+
+networks:
+  gateway-net:
+    external: true

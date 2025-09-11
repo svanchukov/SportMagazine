@@ -5,29 +5,46 @@ services:
     image: postgres:16
     container_name: user-db
     environment:
-      POSTGRES_DB: user
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: user
+      - POSTGRES_DB=user
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=user
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - user-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eureka-server:
+    build: ../eureka
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - user-net
+
 
   user-service:
     build: .   # путь до Dockerfile
     container_name: user-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: user
+      URL_DATASOURCE_DB: jdbc:postgresql://user-db:5432/user
+      NAME_POSTGRES: user
+      PASSWORD_POSTGRES: user
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      URL_EUREKA: http://eureka-server:8761/eureka/
     ports:
-      - "8082:8080"
+      - "8083:8083"
     depends_on:
       - user-db
+      - eureka-server
     networks:
       - user-net
 

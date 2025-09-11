@@ -89,9 +89,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>ru.svanchukov.gateway.GatewayApplication</mainClass> <!-- Укажите ваш главный класс -->
-				</configuration>
 				<executions>
 					<execution>
 						<goals>
