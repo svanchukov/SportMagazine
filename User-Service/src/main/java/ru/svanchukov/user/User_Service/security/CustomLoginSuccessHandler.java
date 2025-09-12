@@ -36,20 +36,21 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
      * @throws ServletException в случае ошибки сервлета
      */
     @Override
-    public void onAuthenticationSuccess(final HttpServletRequest request,
-                                        final HttpServletResponse response,
-                                        final Authentication authentication) throws IOException, ServletException {
-        final String email = authentication.getName();
-        final String token = jwtUtil.generateToken(email);
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+        String email = authentication.getName();
+        LOGGER.info("Пользователь '{}' успешно аутентифицирован.", email);
 
-        LOGGER.info("Пользователь '{}' успешно аутентифицирован. Сгенерирован токен: {}", email, token);
+        // Генерация токена
+        String token = jwtUtil.generateToken(email);
 
-        // Кодируем токен для безопасной передачи в URL
-        final String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
+        // Вариант 1: отдать токен в заголовке (лучше для SPA/REST)
+        response.setHeader("Authorization", "Bearer " + token);
 
-        // Перенаправляем с токеном в URL
-        final String redirectUrl = "http://localhost:8080/products?token=" + encodedToken;
-        LOGGER.debug("Перенаправление на URL: {}", redirectUrl);
-        response.sendRedirect(redirectUrl);
+        // Вариант 2: редирект с токеном в query (менее безопасно, но наглядно)
+        String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
+        response.sendRedirect("/products?token=" + encodedToken);
     }
+
 }

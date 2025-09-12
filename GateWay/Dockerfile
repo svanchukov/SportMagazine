@@ -1,14 +1,17 @@
-# Используем официальный образ OpenJDK 21
-FROM eclipse-temurin:21-jdk-alpine
+# Этап сборки
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-# Указываем рабочую директорию
 WORKDIR /app
 
-# Копируем билдированный JAR-файл в контейнер
-COPY target/gateway-service-0.0.1-SNAPSHOT.jar app.jar
+COPY . .
 
-# Открываем порт (можно заменить, если порт другой в application.yml)
-EXPOSE 8087
+RUN mvn clean package -DskipTests
 
-# Команда для запуска приложения
+# Этап запуска
+FROM eclipse-temurin:21-jdk-jammy
+
+WORKDIR /app
+
+COPY --from=build /app/target/gateway-service-0.0.1-SNAPSHOT.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

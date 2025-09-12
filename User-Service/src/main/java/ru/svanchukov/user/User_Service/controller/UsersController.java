@@ -96,7 +96,7 @@ public class UsersController {
      * @return редирект на страницу со списком пользователей
      */
     @PostMapping("/delete/{userId}")
-    public String deleteUser(@PathVariable final UUID userId) {
+    public String deleteUser(@PathVariable("userId") final UUID userId) {
         LOGGER.info("Удаление пользователя с ID: {}", userId);
         usersService.deleteUser(userId);
         return "redirect:/users";

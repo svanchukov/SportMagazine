@@ -3,60 +3,8 @@ server:
 
 spring:
   application:
-    name: api-gateway
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: test
-          uri: lb://eureka-client
-          predicates:
-            - Path=/main/test
-            - Method=GET
-          filters:
-            - TokenRelay=  # Передача токена для защищённых маршрутов
-        - id: user-service
-          uri: lb://user-service  # Используем lower-case из-за enabled: true
-          predicates:
-            - Path=/users/**
-          filters:
-            - TokenRelay=
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/orders/**
-          filters:
-            - TokenRelay=
-        - id: product-service
-          uri: lb://product-service
-          predicates:
-            - Path=/products/**
-          filters:
-            - TokenRelay=
-    config:
-      enabled: false
-      discovery:
-        enabled: false
-  security:
-    oauth2:
-      client:
-        provider:
-          keycloak:
-            issuer-uri: http://localhost:8082/realms/selmag  # Укажите ваш realm
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: Gateway-Client  # Соответствует Client ID из Keycloak
-            client-secret: YlQwEAXT7EcClczgS4Nyje7J7p6755zV  # Замените на секрет из Keycloak
-            authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8765/login/oauth2/code/keycloak  # Соответствует порту Gateway
-            scope: openid, profile
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8082/realms/selmag  # Указывает, откуда проверять токены
+    name: gateway-service
+
 
 eureka:
   client:
