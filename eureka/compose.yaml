@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  eureka-server:
+    build:
+      context: .   # путь к проекту eureka
+      dockerfile: Dockerfile     # можно указать, если Dockerfile не в корне
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - eureka-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-Xms256m -Xmx512m
+
+networks:
+  eureka-net:
+    external: true

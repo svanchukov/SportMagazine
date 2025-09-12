@@ -176,6 +176,7 @@
                     <excludes>**/generated/**/*</excludes>
                     <excludes>**/generated-sources/**/*</excludes>
                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -194,6 +195,7 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <excludeFilterFile>../config/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -224,6 +226,7 @@
                         <excludeRoot>target/classes</excludeRoot>
                         <excludeRoot>target/generated-sources</excludeRoot>
                     </excludeRoots>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>

@@ -9,10 +9,7 @@ import org.springframework.web.client.RestTemplate;
  * Позволяет внедрять {@link RestTemplate} в сервисы для выполнения HTTP-запросов.
  */
 @Configuration
-public final class RestTemplateConfig {
-
-    private RestTemplateConfig() {
-    }
+public class RestTemplateConfig {
 
     /**
      * Создаёт и возвращает бин {@link RestTemplate}.
