@@ -4,10 +4,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+import ru.svanchukov.user.User_Service.handler.SecurityConfigurationException;
 
 /**
  * Конфигурация безопасности приложения.
@@ -23,15 +26,14 @@ public class SecurityConfig {
 
     /**
      * Настраивает цепочку фильтров безопасности Spring Security.
-     *
-     * @param http                      объект конфигурации HttpSecurity
+     * @param http                     объект конфигурации HttpSecurity
      * @param customLoginSuccessHandler кастомный обработчик успешной аутентификации
      * @return SecurityFilterChain
      * @throws Exception в случае ошибки конфигурации
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CustomLoginSuccessHandler customLoginSuccessHandler) throws Exception {
+            CustomLoginSuccessHandler customLoginSuccessHandler) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
                         // Статические ресурсы
@@ -72,8 +74,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Настройка кодировщика паролей.
+     * @return PasswordEncoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return NoOpPasswordEncoder.getInstance(); // Временно отключаю хеширование
     }
 }

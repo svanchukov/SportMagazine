@@ -21,7 +21,7 @@ services:
       retries: 5
 
   eureka-server:
-    build: ../eureka
+    build: ../eureka  # сначала build, потом image
     image: eureka-server:latest
     container_name: eureka-server
     ports:
@@ -31,7 +31,7 @@ services:
 
 
   user-service:
-    build: .   # путь до Dockerfile
+    build: .
     container_name: user-service
     environment:
       URL_DATASOURCE_DB: jdbc:postgresql://user-db:5432/user
