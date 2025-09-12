@@ -34,16 +34,14 @@ public class UsersController {
 
     /**
      * Отображает список всех пользователей.
-     * @param name  необязательный параметр фильтра по имени
      * @param model модель для передачи данных в представление
      * @return имя шаблона страницы со списком пользователей
      */
     @GetMapping
-    public String getUserList(@RequestParam(required = false) final String name, final Model model) {
+    public String getUserList(final Model model) {
         LOGGER.info("Запрос на получение списка пользователей");
         final List<UserDTO> users = usersService.findAll();
         model.addAttribute("users", users);
-        model.addAttribute("name", name);
         return "users";
     }
 

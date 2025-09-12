@@ -6,10 +6,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
+
 
 /**
  * Сущность пользователя.
@@ -19,31 +26,32 @@ import java.util.UUID;
 @Table(name = "\"User\"") // Указываем точное имя таблицы с учетом регистра и кавычек
 @Getter
 @Setter
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class User {
 
-    /**
-     * Уникальный идентификатор пользователя (UUID).
-     */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // Можно использовать кастомный генератор UUID
-    @Column(name = "id", columnDefinition = "uuid DEFAULT uuid_generate_v4()")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "name")
+    @Version
+    @Column(nullable = false)
+    private Long version; // Добавили для optimistic locking
+
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "email")
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "jwtToken")
+    @Column(name = "jwt_token") // Привели к единому стилю
     private String jwtToken;
-
-    public User() {
-    }
 }
