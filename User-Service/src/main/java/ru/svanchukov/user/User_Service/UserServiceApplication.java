@@ -17,7 +17,7 @@ public class UserServiceApplication {
 	 * Точка входа в приложение.
 	 * @param args аргументы командной строки
 	 */
-	public static void main(final String[] args) {
+	public static void main(String[] args) {
 		SpringApplication.run(UserServiceApplication.class, args);
 	}
 }

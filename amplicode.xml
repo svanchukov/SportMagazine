@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AmplicodePersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="Order-Service" name="Default">
+        <packages>
+          <package value="ru.svanchukov.Order_Service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="Product-Service" name="Default">
+        <packages>
+          <package value="ru.svanchukov.productservice" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="User-Service" name="Default">
+        <packages>
+          <package value="ru.svanchukov.user.User_Service" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
+</project>

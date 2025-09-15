@@ -22,8 +22,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
 
 
 eureka:
@@ -31,7 +39,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${URL_EUREKA:http://localhost:8762/eureka/}
+      defaultZone: ${URL_EUREKA:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 

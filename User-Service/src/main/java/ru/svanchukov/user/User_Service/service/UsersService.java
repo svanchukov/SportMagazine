@@ -9,7 +9,6 @@ import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.entity.User;
 import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
-import ru.svanchukov.user.User_Service.security.jwt.JwtUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,6 @@ public class UsersService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsersService.class);
 
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
     /**
      * Получение списка всех пользователей.
@@ -51,6 +49,7 @@ public class UsersService {
 
     /**
      * Создание нового пользователя.
+     *
      * @param createNewUserDTO DTO с данными для нового пользователя
      */
     public UserDTO saveUser(final CreateNewUserDTO createNewUserDTO) {
@@ -60,9 +59,6 @@ public class UsersService {
         user.setName(createNewUserDTO.getName());
         user.setPassword(createNewUserDTO.getPassword());
 
-        // Генерация JWT-токена для пользователя
-        final String token = jwtUtil.generateToken(user.getEmail());
-        user.setJwtToken(token);
 
         userRepository.save(user);
         LOGGER.info("Создан новый пользователь: {}", user);

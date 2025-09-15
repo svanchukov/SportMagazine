@@ -63,10 +63,12 @@ public class UserService {
 
     /**
      * Обновление данных пользователя.
-     * @param id идентификатор пользователя
+     *
+     * @param id            идентификатор пользователя
      * @param updateUserDTO данные для обновления
+     * @return
      */
-    public void updateUser(final UUID id, final UpdateUserDTO updateUserDTO) {
+    public UpdateUserDTO updateUser(final UUID id, final UpdateUserDTO updateUserDTO) {
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     if (LOGGER.isErrorEnabled()) {
@@ -85,6 +87,7 @@ public class UserService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Пользователь обновлён: {}", user);
         }
+        return updateUserDTO;
     }
 
     /**

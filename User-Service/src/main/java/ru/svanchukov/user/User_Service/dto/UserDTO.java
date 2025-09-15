@@ -11,7 +11,7 @@ import java.util.UUID;
  * DTO пользователя.
  */
 @Data
-public class UserDTO {
+public class UserDTO  {
 
     private UUID id;
 

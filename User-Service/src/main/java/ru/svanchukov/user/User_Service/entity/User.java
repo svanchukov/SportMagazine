@@ -1,13 +1,9 @@
 package ru.svanchukov.user.User_Service.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 
@@ -25,14 +21,19 @@ public class User {
      * Уникальный идентификатор пользователя (UUID).
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // Можно использовать кастомный генератор UUID
-    @Column(name = "id", columnDefinition = "uuid DEFAULT uuid_generate_v4()")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+
+    @Version
+    @Column(nullable = false)
+    private Long version; // Добавили для optimistic locking
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "phone_number")
@@ -41,7 +42,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "jwtToken")
+    @Column(name = "jwt_token")
     private String jwtToken;
 
     public User() {
