@@ -18,13 +18,12 @@ import java.util.UUID;
 public class User {
 
     /**
-     * Уникальный идентификатор пользователя (UUID).
+     * Уникальный идентификатор пользователя (BIGINT).
      */
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    private Long id;
 
     @Version
     @Column(nullable = false)
@@ -38,12 +37,6 @@ public class User {
 
     @Column(name = "phone_number")
     private String phoneNumber;
-
-    @Column(name = "password", nullable = false)
-    private String password;
-
-    @Column(name = "jwt_token")
-    private String jwtToken;
 
     public User() {
     }

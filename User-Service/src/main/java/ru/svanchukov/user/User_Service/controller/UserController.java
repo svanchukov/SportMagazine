@@ -13,7 +13,6 @@ import ru.svanchukov.user.User_Service.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 /**
  * Контроллер для управления операциями над конкретным пользователем.
@@ -33,7 +32,7 @@ public class UserController {
 
     @Operation(summary = "Получить пользователя по ID")
     @GetMapping
-    public ResponseEntity<UserDTO> getUser(@PathVariable("userId") UUID userId) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable("userId") Long userId) {
 
         LOGGER.info("Загрузка пользователя по ID: {}", userId);
         return userService.findById(userId)
@@ -43,7 +42,7 @@ public class UserController {
 
     @Operation(summary = "Получить детали пользователя")
     @GetMapping("/details")
-    public ResponseEntity<UserDTO> getUserDetails(@PathVariable("userId") UUID userId) {
+    public ResponseEntity<UserDTO> getUserDetails(@PathVariable("userId") Long userId) {
 
         LOGGER.info("Загрузка деталей пользователя с ID: {}", userId);
         final UserDTO user = userService.findById(userId)
@@ -53,7 +52,7 @@ public class UserController {
 
     @Operation(summary = "Обновить данные пользователя")
     @PatchMapping("/edit")
-    public ResponseEntity<UpdateUserDTO> updateUser(@PathVariable("userId") UUID userId,
+    public ResponseEntity<UpdateUserDTO> updateUser(@PathVariable("userId") Long userId,
             @Valid @RequestBody final UpdateUserDTO updateUserDTO,
             final BindingResult bindingResult) {
 
@@ -75,7 +74,7 @@ public class UserController {
 
     @Operation(summary = "Удалить пользователя по ID")
     @PostMapping("/delete")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
 
         LOGGER.info("Удаление пользователя с ID: {}", userId);
         userService.deleteUser(userId);

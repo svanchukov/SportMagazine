@@ -23,13 +23,6 @@ spring:
   application:
     name: product-service
 
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-
-
-
 eureka:
   client:
     register-with-eureka: true

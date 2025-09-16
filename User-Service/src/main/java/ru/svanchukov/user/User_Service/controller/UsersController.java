@@ -12,11 +12,9 @@ import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.service.UsersService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Контроллер для управления списком пользователей.
@@ -69,7 +67,7 @@ public class UsersController {
 
     @Operation(summary = "Удалить пользователя по ID")
     @PostMapping("/delete/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") final UUID userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") final Long userId) {
 
         LOGGER.info("Удаление пользователя с ID: {}", userId);
         usersService.deleteUser(userId);

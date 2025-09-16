@@ -3,6 +3,7 @@ package ru.svanchukov.Order_Service.service;
 import ru.svanchukov.Order_Service.dto.CreateNewProductDTO;
 import ru.svanchukov.Order_Service.dto.ProductDTO;
 import ru.svanchukov.Order_Service.entity.Product;
+import ru.svanchukov.Order_Service.handler.PriceException;
 import ru.svanchukov.Order_Service.handler.ProductSavingException;
 import ru.svanchukov.Order_Service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,9 @@ public class ProductsService {
         product.setPrice(createNewProductDTO.getPrice());
         product.setBrand(createNewProductDTO.getBrand());
 
+        if (createNewProductDTO.getPrice() <= 0) {
+            throw new PriceException("Цена должна быть больше 0");
+        }
 
         try {
             productRepository.save(product);

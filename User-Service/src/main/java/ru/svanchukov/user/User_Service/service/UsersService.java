@@ -12,7 +12,6 @@ import ru.svanchukov.user.User_Service.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -42,7 +41,7 @@ public class UsersService {
      * Получение пользователя по ID.
      * @param id идентификатор пользователя.
      */
-    public Optional<UserDTO> getUserById(final UUID id) {
+    public Optional<UserDTO> getUserById(final Long id) {
         return userRepository.findById(id)
                 .map(this::mapToDTO);
     }
@@ -57,7 +56,6 @@ public class UsersService {
         user.setEmail(createNewUserDTO.getEmail());
         user.setPhoneNumber(createNewUserDTO.getPhoneNumber());
         user.setName(createNewUserDTO.getName());
-        user.setPassword(createNewUserDTO.getPassword());
 
 
         userRepository.save(user);
@@ -70,7 +68,7 @@ public class UsersService {
      * Удаление пользователя по ID.
      * @param id идентификатор пользователя
      */
-    public void deleteUser(final UUID id) {
+    public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
@@ -93,7 +91,6 @@ public class UsersService {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setName(user.getName());
-        dto.setPassword(user.getPassword());
         return dto;
     }
 }
