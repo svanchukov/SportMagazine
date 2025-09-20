@@ -22,9 +22,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
 
+  liquibase:
+    clear-checksums: true
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
 
 
 eureka:

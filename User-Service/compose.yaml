@@ -37,7 +37,7 @@ services:
       URL_DATASOURCE_DB: jdbc:postgresql://user-db:5432/user
       NAME_POSTGRES: user
       PASSWORD_POSTGRES: user
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       URL_EUREKA: http://eureka-server:8761/eureka/
     ports:

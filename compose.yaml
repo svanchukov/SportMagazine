@@ -22,8 +22,10 @@ services:
     container_name: product-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
-        - POSTGRES_USER=product
-        - POSTGRES_PASSWORD=product
+      SPRING_DATASOURCE_USERNAME: product
+      SPRING_DATASOURCE_PASSWORD: product
+#        - POSTGRES_USER=product
+#        - POSTGRES_PASSWORD=product
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     ports:
@@ -40,8 +42,10 @@ services:
     container_name: order-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
-        - POSTGRES_USER=product
-        - POSTGRES_PASSWORD=product
+      SPRING_DATASOURCE_USERNAME: product
+      SPRING_DATASOURCE_PASSWORD: product
+#        - POSTGRES_USER=product
+#        - POSTGRES_PASSWORD=product
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     ports:

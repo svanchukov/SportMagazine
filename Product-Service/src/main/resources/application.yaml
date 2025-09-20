@@ -18,10 +18,12 @@ spring:
       org.springframework: DEBUG
       com.zaxxer.hikari: DEBUG
 
-
-
   application:
     name: product-service
+
+  liquibase:
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
 
 eureka:
   client:
