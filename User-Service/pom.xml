@@ -29,6 +29,7 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<!-- User-POM -->
 	<dependencies>
 		<!-- Spring Boot Starters -->
 		<dependency>
