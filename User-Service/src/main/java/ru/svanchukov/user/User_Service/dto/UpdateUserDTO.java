@@ -24,8 +24,4 @@ public class UpdateUserDTO {
     @Pattern(regexp = "^(\\+7[0-9]{9,10}|8[0-9]{9,10})$", message = "Номер телефона должен начинаться с 8 или +7 и содержать 10 или 11 цифр")
     private String phoneNumber;
 
-    @NotBlank(message = "Пароль не должен быть пустым")
-    private String password;
-
-    private String jwtToken;
 }

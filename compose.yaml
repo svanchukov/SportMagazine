@@ -1,48 +1,9 @@
+version: "3.9"
+
 services:
-  admin-server:
-    build:
-      context: ./admin-server
-      dockerfile: Dockerfile
-    ports:
-      - "8085:8085"
-    environment:
-      - LOKI=http://svanchukov-loki:3100
-    networks:
-      - sportmagazine-network
-
-  product-service:
-    build:
-      context: ./Product-Service
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - product-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
-      - SPRING_DATASOURCE_USERNAME=product
-      - SPRING_DATASOURCE_PASSWORD=product
-      - SVANCHUKOV_SERVICES_ORDER_URI=http://order-service:8081
-    networks:
-      - sportmagazine-network
-
-  order-service:
-    build:
-      context: ./Order-Service
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
-    depends_on:
-      - product-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/product
-      - SPRING_DATASOURCE_USERNAME=product
-      - SPRING_DATASOURCE_PASSWORD=product
-    networks:
-      - sportmagazine-network
-
   product-db:
     image: postgres:16
+    container_name: product-db
     environment:
       - POSTGRES_DB=product
       - POSTGRES_USER=product
@@ -50,17 +11,53 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
     networks:
-      - sportmagazine-network
+      - product-net
 
-  redis:
-    image: redis:latest
+  product-service:
+    build:
+      context: ./Product-Service   # путь к папке с Dockerfile
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
+      SPRING_DATASOURCE_USERNAME: product
+      SPRING_DATASOURCE_PASSWORD: product
+#        - POSTGRES_USER=product
+#        - POSTGRES_PASSWORD=product
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     ports:
-      - "6379:6379"
+      - "8080:8080"
+    depends_on:
+      - product-db
     networks:
-      - sportmagazine-network
+      - product-net
+
+  order-service:
+    build:
+      context: ./Order-Service   # путь к папке с Dockerfile
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
+      SPRING_DATASOURCE_USERNAME: product
+      SPRING_DATASOURCE_PASSWORD: product
+#        - POSTGRES_USER=product
+#        - POSTGRES_PASSWORD=product
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+    ports:
+      - "8081:8080"
+    depends_on:
+      - product-db
+    networks:
+      - product-net
+
+volumes:
+  pgdata:
 
 networks:
-  sportmagazine-network:
+  product-net:
     driver: bridge

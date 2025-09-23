@@ -4,32 +4,11 @@ server:
 spring:
   application:
     name: order-service # имя микросервиса для Eureka
+  messages:
+    basename: messages
+    encoding: UTF-8
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    listener:
-      ack-mode: record
-      retry:
-        enabled: true
-        max-attempts: 3
-      missing-topics-fatal: false
-    consumer:
-      group-id: order-service-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: com.example.User_Service.kafka
-        spring.json.value.default.type: com.example.User_Service.kafka.UserCreatedEvent
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    template:
-      default-topic: user-events
-    dlq:
-      enabled: true
-
-#  boot:
+  #  boot:
 #    admin:
 #      client:
 #        enabled: true
@@ -47,6 +26,10 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+
+  liquibase:
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
 
 eureka:
   client:

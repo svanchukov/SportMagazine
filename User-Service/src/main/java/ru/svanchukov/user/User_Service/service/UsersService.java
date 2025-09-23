@@ -9,11 +9,9 @@ import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.entity.User;
 import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
-import ru.svanchukov.user.User_Service.security.jwt.JwtUtil;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +25,6 @@ public class UsersService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsersService.class);
 
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
     /**
      * Получение списка всех пользователей.
@@ -44,13 +41,14 @@ public class UsersService {
      * Получение пользователя по ID.
      * @param id идентификатор пользователя.
      */
-    public Optional<UserDTO> getUserById(final UUID id) {
+    public Optional<UserDTO> getUserById(final Long id) {
         return userRepository.findById(id)
                 .map(this::mapToDTO);
     }
 
     /**
      * Создание нового пользователя.
+     *
      * @param createNewUserDTO DTO с данными для нового пользователя
      */
     public UserDTO saveUser(final CreateNewUserDTO createNewUserDTO) {
@@ -58,11 +56,7 @@ public class UsersService {
         user.setEmail(createNewUserDTO.getEmail());
         user.setPhoneNumber(createNewUserDTO.getPhoneNumber());
         user.setName(createNewUserDTO.getName());
-        user.setPassword(createNewUserDTO.getPassword());
 
-        // Генерация JWT-токена для пользователя
-        final String token = jwtUtil.generateToken(user.getEmail());
-        user.setJwtToken(token);
 
         userRepository.save(user);
         LOGGER.info("Создан новый пользователь: {}", user);
@@ -74,7 +68,7 @@ public class UsersService {
      * Удаление пользователя по ID.
      * @param id идентификатор пользователя
      */
-    public void deleteUser(final UUID id) {
+    public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
@@ -97,7 +91,6 @@ public class UsersService {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setName(user.getName());
-        dto.setPassword(user.getPassword());
         return dto;
     }
 }

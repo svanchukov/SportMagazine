@@ -11,7 +11,6 @@ import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Сервис для работы с пользователями.
@@ -29,7 +28,7 @@ public class UserService {
      * Получение пользователя по ID.
      * @param id идентификатор пользователя
      */
-    public Optional<UserDTO> findById(final UUID id) {
+    public Optional<UserDTO> findById(final Long id) {
         final Optional<UserDTO> user = userRepository.findById(id).map(this::mapToDTO);
 
         if (user.isPresent()) {
@@ -48,7 +47,7 @@ public class UserService {
      * Получение данных для редактирования пользователя.
      * @param userId идентификатор пользователя
      */
-    public UpdateUserDTO getUpdateUserDTO(final UUID userId) {
+    public UpdateUserDTO getUpdateUserDTO(final Long userId) {
         final UserDTO userDTO = findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + userId + " не найден"));
 
@@ -56,17 +55,18 @@ public class UserService {
         updateUserDTO.setName(userDTO.getName());
         updateUserDTO.setEmail(userDTO.getEmail());
         updateUserDTO.setPhoneNumber(userDTO.getPhoneNumber());
-        updateUserDTO.setPassword(userDTO.getPassword());
 
         return updateUserDTO;
     }
 
     /**
      * Обновление данных пользователя.
-     * @param id идентификатор пользователя
+     *
+     * @param id            идентификатор пользователя
      * @param updateUserDTO данные для обновления
+     * @return
      */
-    public void updateUser(final UUID id, final UpdateUserDTO updateUserDTO) {
+    public UpdateUserDTO updateUser(final Long id, final UpdateUserDTO updateUserDTO) {
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     if (LOGGER.isErrorEnabled()) {
@@ -78,20 +78,20 @@ public class UserService {
         user.setEmail(updateUserDTO.getEmail());
         user.setName(updateUserDTO.getName());
         user.setPhoneNumber(updateUserDTO.getPhoneNumber());
-        user.setPassword(updateUserDTO.getPassword());
 
         userRepository.save(user);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Пользователь обновлён: {}", user);
         }
+        return updateUserDTO;
     }
 
     /**
      * Удаление пользователя по ID.
      * @param id идентификатор пользователя
      */
-    public void deleteUser(final UUID id) {
+    public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Попытка удалить несуществующего пользователя с ID {}", id);
@@ -117,7 +117,6 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setName(user.getName());
-        dto.setPassword(user.getPassword());
         return dto;
     }
 }

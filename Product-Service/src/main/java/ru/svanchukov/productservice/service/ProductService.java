@@ -88,7 +88,7 @@ public class ProductService {
      * @param id                идентификатор продукта
      * @param updateProductDTO  новые данные для обновления
      */
-    public void updateProduct(Long id, UpdateProductDTO updateProductDTO) {
+    public ProductDTO updateProduct(Long id, UpdateProductDTO updateProductDTO) {
         LOGGER.info("Запрос на обновление продукта с ID: {}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
@@ -102,8 +102,14 @@ public class ProductService {
         product.setDescriptions(updateProductDTO.getDescriptions());
         product.setPrice(updateProductDTO.getPrice());
 
-        productRepository.save(product);
-        LOGGER.info("Продукт с ID: {} успешно обновлен", id);
+        try {
+            Product updatedProduct = productRepository.save(product);
+            LOGGER.info("Продукт с ID: {} успешно обновлен", id);
+            return mapToDto(updatedProduct);
+        } catch (Exception e) {
+            LOGGER.error("Ошибка при обновлении продукта с ID {}", id, e);
+            throw new ProductSavingException("Ошибка при обновлении продукта с ID " + id);
+        }
     }
 
     /**

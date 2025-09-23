@@ -3,28 +3,23 @@ package ru.svanchukov.user.User_Service.controller;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.user.User_Service.dto.UpdateUserDTO;
 import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 /**
  * Контроллер для управления операциями над конкретным пользователем.
- * Поддерживает просмотр деталей, редактирование и удаление пользователя.
  */
-@Controller
-@RequestMapping("/user/{userId:[0-9a-fA-F\\-]{36}}")
+@RestController
+@RequestMapping("users/{userId:\\d+}")
+@Tag(name = "UserController API", description = "Операции над конкретным пользователем")
 public class UserController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
@@ -35,103 +30,56 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
-     * Загружает пользователя по ID перед каждым запросом и добавляет его в модель.
-     * @param userId UUID пользователя
-     * @return DTO пользователя
-     */
-    @ModelAttribute("user")
-    public UserDTO getUser(@PathVariable("userId") final UUID userId) {
+    @Operation(summary = "Получить пользователя по ID")
+    @GetMapping
+    public ResponseEntity<UserDTO> getUser(@PathVariable("userId") Long userId) {
+
         LOGGER.info("Загрузка пользователя по ID: {}", userId);
         return userService.findById(userId)
+                .map(ResponseEntity::ok)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + userId + " не найден"));
     }
 
-    /**
-     * Отображает страницу с деталями пользователя.
-     * @param userId UUID пользователя
-     * @param model  модель для передачи данных в представление
-     * @return имя шаблона страницы деталей пользователя
-     */
+    @Operation(summary = "Получить детали пользователя")
     @GetMapping("/details")
-    public String getUserDetails(@PathVariable final UUID userId, final Model model) {
+    public ResponseEntity<UserDTO> getUserDetails(@PathVariable("userId") Long userId) {
+
         LOGGER.info("Загрузка деталей пользователя с ID: {}", userId);
         final UserDTO user = userService.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + userId + " не найден"));
-        model.addAttribute("user", user);
-        return "user-details";
+        return ResponseEntity.ok(user);
     }
 
-    /**
-     * Отображает страницу редактирования пользователя.
-     * @param userId UUID пользователя
-     * @param model  модель для передачи данных в представление
-     * @return имя шаблона страницы редактирования
-     */
-    @GetMapping("/edit")
-    public String redirectToEdit(@PathVariable final UUID userId, final Model model) {
-        LOGGER.info("Переход на редактирование пользователя с ID: {}", userId);
-        final UpdateUserDTO updateUserDTO = userService.getUpdateUserDTO(userId);
-        model.addAttribute("updateUserDTO", updateUserDTO);
-        return "edit";
-    }
+    @Operation(summary = "Обновить данные пользователя")
+    @PatchMapping("/edit")
+    public ResponseEntity<UpdateUserDTO> updateUser(@PathVariable("userId") Long userId,
+            @Valid @RequestBody final UpdateUserDTO updateUserDTO,
+            final BindingResult bindingResult) {
 
-    /**
-     * Обновляет данные пользователя.
-     * @param userId         UUID пользователя
-     * @param updateUserDTO  DTO с обновлёнными данными
-     * @param bindingResult  результат валидации
-     * @param model          модель для передачи ошибок
-     * @return редирект на страницу деталей или форма редактирования при ошибках
-     */
-    @PostMapping("/edit")
-    public String updateUser(@PathVariable final UUID userId,
-                             @Valid @ModelAttribute("updateUserDTO") final UpdateUserDTO updateUserDTO,
-                             final BindingResult bindingResult,
-                             final Model model) {
         LOGGER.info("Обновление пользователя с ID: {}", userId);
 
         if (bindingResult.hasErrors()) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Ошибка валидации: {}", bindingResult.getAllErrors());
-            }
-            model.addAttribute("errors", bindingResult.getAllErrors());
-            return "edit";
+            LOGGER.error("Ошибка валидации: {}", bindingResult.getAllErrors());
+            return ResponseEntity.badRequest().build();
         }
 
         try {
-            userService.updateUser(userId, updateUserDTO);
-            return "redirect:/user/" + userId + "/details";
+            UpdateUserDTO updatedUser = userService.updateUser(userId, updateUserDTO);
+            return ResponseEntity.ok(updatedUser);
         } catch (NoSuchElementException | IllegalArgumentException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Ошибка при обновлении пользователя: {}", e.getMessage());
-            }
-            model.addAttribute("error", e.getMessage());
-            return "edit";
+            LOGGER.error("Ошибка при обновлении пользователя: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
-    /**
-     * Удаляет пользователя по ID.
-     * @param userId UUID пользователя
-     * @return редирект на страницу со списком пользователей
-     */
+    @Operation(summary = "Удалить пользователя по ID")
     @PostMapping("/delete")
-    public String deleteUser(@PathVariable final UUID userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
+
         LOGGER.info("Удаление пользователя с ID: {}", userId);
         userService.deleteUser(userId);
-        return "redirect:/users";
+        LOGGER.info("Пользователь с ID: {}, удалён", userId);
+        return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Обрабатывает все исключения, возникшие в контроллере.
-     * @param ex исключение
-     * @param model модель для передачи информации об ошибке
-     * @return имя шаблона страницы ошибки
-     */
-    @ExceptionHandler(Exception.class)
-    public String handleException(final Exception ex, final Model model) {
-        model.addAttribute("error", "Произошла ошибка: " + ex.getMessage());
-        return "error";
-    }
 }

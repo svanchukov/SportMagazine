@@ -27,8 +27,5 @@ public class CreateNewUserDTO {
     )
     private String phoneNumber;
 
-    @NotBlank(message = "Пароль не должен быть пустым")
-    private String password;
 
-    private String jwtToken;
 }
