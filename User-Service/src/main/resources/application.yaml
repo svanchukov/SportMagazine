@@ -3,6 +3,25 @@ server:
 
 spring:
 
+  datasource:
+    url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
+    username: ${NAME_POSTGRES:user}
+    password: ${PASSWORD_POSTGRES:user}
+    driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
+    hikari:
+      maximum-pool-size: ${POOL_SIZE:10}  # опционально
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+    ddl-auto: none
+    show-sql: true
+
+  liquibase:
+    clear-checksums: true
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
+
+
   application:
     name: User-Service
 
@@ -11,25 +30,6 @@ spring:
     suffix: .html
     mode: HTML
     cache: false
-
-  datasource:
-    url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
-    username: ${NAME_POSTGRES:user}
-    password: ${PASSWORD_POSTGRES:user}
-    driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
-    hikari:
-      maximum-pool-size: ${POOL_SIZE:10}  # опционально
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-
-  liquibase:
-    clear-checksums: true
-    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
-    enabled: true
-
 
 eureka:
   client:
