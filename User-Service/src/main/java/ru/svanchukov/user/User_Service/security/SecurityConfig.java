@@ -14,13 +14,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(auth -> auth
-                        // защищаем только API
-                        .requestMatchers("/users-api/**").authenticated()
-                        // остальные ресурсы (Swagger UI статические файлы) доступны без авторизации
-                        .anyRequest().permitAll()
-                )
                 .csrf(AbstractHttpConfigurer::disable)
-                .build();
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/users/login",
+                                "/users/register").permitAll()
+                        .anyRequest().authenticated()
+                ).build();
     }
 }

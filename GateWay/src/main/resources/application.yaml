@@ -14,7 +14,7 @@ spring:
         - id: user-service
           uri: http://localhost:8083
           predicates:
-            - Path=/api/users/**
+            - Path=/users/**
         - id : swagger
           uri: http://localhost:8083
           predicates:
@@ -24,6 +24,7 @@ spring:
           uri: http://localhost:8761
           predicates:
             - Path=/eureka/**
+
   security:
     user:
       name: gateway
@@ -42,3 +43,6 @@ eureka:
       defaultZone: ${URL_EUREKA:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
+
+user-service:
+  url: http://localhost:8083
