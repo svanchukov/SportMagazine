@@ -1,40 +1,32 @@
 package com.example.GateWay.controller;
 
+import com.example.GateWay.dto.LoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Авторизация", description = "Регистрация и вход через Gateway")
 public class AuthController {
 
-    private final WebClient webClient;
+    private final WebClient.Builder webClient;
 
-
-    @Operation(summary = "Вход пользователя через Gateway")
-    @PostMapping("/login")
-    public Mono<ResponseEntity<String>> login(@RequestBody Object userDto) {
-        return webClient.post()
+    public Mono<String> login(@RequestBody LoginRequestDTO dto) {
+        return webClient
+                .baseUrl("http://localhost:8083")
+                .build()
+                .post()
                 .uri("/users/login")
-                .bodyValue(userDto)
+                .bodyValue(dto)
                 .retrieve()
-                .toEntity(String.class);
-    }
-
-    @Operation(summary = "Регистрация пользователя через Gateway")
-    @PostMapping("/register")
-    public Mono<ResponseEntity<String>> register(@RequestBody Object userDto) {
-        return webClient.post()
-                .uri("/users/register")
-                .bodyValue(userDto)
-                .retrieve()
-                .toEntity(String.class);
+                .bodyToMono(String.class);
     }
 }

@@ -29,6 +29,8 @@ public class UpdateProductDTO {
     @NotBlank(message = "Бренд не должен быть пустым")
     private String brand;
 
+    public UpdateProductDTO() {}
+
     public UpdateProductDTO(String name, String category, String descriptions, double price, String brand) {
         this.name = name;
         this.category = category;

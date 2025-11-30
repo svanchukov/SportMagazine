@@ -1,11 +1,17 @@
-FROM openjdk:21-jdk-slim
+# Этап сборки
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Копируем jar-файл (он должен быть собран через mvn package)
-COPY target/*.jar app.jar
+COPY . .
 
-# Экспонируем порт (Spring Boot сам знает, какой брать — через application.properties)
-EXPOSE 8080
+RUN mvn clean package -DskipTests
+
+# Этап запуска
+FROM eclipse-temurin:21-jdk-jammy
+
+WORKDIR /app
+
+COPY --from=build /app/target/User-Service-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

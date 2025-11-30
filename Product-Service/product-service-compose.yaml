@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  product-db:
+    image: postgres:16
+    container_name: products-db
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: products
+      POSTGRES_PASSWORD: products
+    ports:
+      - "5432:5432"
+    volumes:
+      - products-pgdata:/var/lib/postgresql/data
+
+  eureka-server:
+    build: ../eureka
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.9.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: "5yco1pVSRDuilE0qg7it1Q"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  product-service:
+    build: .
+    container_name: product-service
+    environment:
+      URL_DATASOURCE_DB: jdbc:postgresql://products-db:5432/products
+      NAME_POSTGRES: products
+      PASSWORD_POSTGRES: products
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - product-db
+      - kafka
+      - eureka-server
+
+volumes:
+  products-pgdata:
+  kafka-data:

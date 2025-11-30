@@ -1,63 +1,179 @@
 version: "3.9"
 
+networks:
+  sport-net:
+
+volumes:
+  product-pgdata:
+  user-pgdata:
+  kafka-data:
+
 services:
+
+  # ===================== POSTGRES (PRODUCTS) =====================
   product-db:
     image: postgres:16
     container_name: product-db
     environment:
-      - POSTGRES_DB=product
-      - POSTGRES_USER=product
-      - POSTGRES_PASSWORD=product
+      POSTGRES_DB: product
+      POSTGRES_USER: product
+      POSTGRES_PASSWORD: product
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - product-pgdata:/var/lib/postgresql/data
     networks:
-      - product-net
+      - sport-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U product -d product"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ===================== POSTGRES (USERS) =====================
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-pgdata:/var/lib/postgresql/data
+    networks:
+      - sport-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===================== EUREKA =====================
+  eureka-server:
+    build: ./eureka
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - sport-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  # ===================== KAFKA (KRaft) =====================
+  kafka:
+    image: confluentinc/cp-kafka:7.9.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: "5yco1pVSRDuilE0qg7it1Q"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - sport-net
+
+  # ===================== KAFKA-UI =====================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8088:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - sport-net
+
+  # ===================== PRODUCT SERVICE =====================
   product-service:
-    build:
-      context: ./Product-Service   # путь к папке с Dockerfile
-      dockerfile: Dockerfile
+    build: ./Product-Service
     container_name: product-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
-      SPRING_DATASOURCE_USERNAME: product
-      SPRING_DATASOURCE_PASSWORD: product
-#        - POSTGRES_USER=product
-#        - POSTGRES_PASSWORD=product
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      URL_DATASOURCE_DB: jdbc:postgresql://product-db:5432/products
+      NAME_POSTGRES: products
+      PASSWORD_POSTGRES: products
+      URL_EUREKA: http://eureka-server:8761/eureka/
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      product-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     ports:
       - "8080:8080"
-    depends_on:
-      - product-db
     networks:
-      - product-net
+      - sport-net
 
+  # ===================== ORDER SERVICE =====================
   order-service:
-    build:
-      context: ./Order-Service   # путь к папке с Dockerfile
-      dockerfile: Dockerfile
+    build: ./Order-Service
     container_name: order-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product
-      SPRING_DATASOURCE_USERNAME: product
-      SPRING_DATASOURCE_PASSWORD: product
-#        - POSTGRES_USER=product
-#        - POSTGRES_PASSWORD=product
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-    ports:
-      - "8081:8080"
+      URL_DATASOURCE_DB: jdbc:postgresql://product-db:5432/products
+      NAME_POSTGRES: products
+      PASSWORD_POSTGRES: products
+      URL_EUREKA: http://eureka-server:8761/eureka/
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - product-db
+      eureka-server:
+        condition: service_healthy
+      product-db:
+        condition: service_healthy
+    ports:
+      - "8084:8080"
     networks:
-      - product-net
+      - sport-net
 
-volumes:
-  pgdata:
+  # ===================== USER SERVICE =====================
+  user-service:
+    build: ./User-Service
+    container_name: user-service
+    environment:
+      URL_DATASOURCE_DB: jdbc:postgresql://user-db:5432/user
+      NAME_POSTGRES: user
+      PASSWORD_POSTGRES: user
+      URL_EUREKA: http://eureka-server:8761/eureka/
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      user-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    ports:
+      - "8083:8080"
+    networks:
+      - sport-net
 
-networks:
-  product-net:
-    driver: bridge
+  # ===================== EMAIL SERVICE =====================
+  email-service:
+    build:
+      context: ./Email-Service
+      dockerfile: Dockerfile
+    container_name: email-service
+    ports:
+      - "8090:8090"
+    networks:
+      - sport-net

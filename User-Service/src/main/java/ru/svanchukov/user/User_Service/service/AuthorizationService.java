@@ -1,13 +1,15 @@
 package ru.svanchukov.user.User_Service.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.svanchukov.user.User_Service.dto.CreateNewUserDTO;
 import ru.svanchukov.user.User_Service.dto.LoginRequestDTO;
-import ru.svanchukov.user.User_Service.dto.UserDTO;
 import ru.svanchukov.user.User_Service.entity.User;
 import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
-import ru.svanchukov.user.User_Service.jwt.JwtService;
+import ru.svanchukov.user.User_Service.jwt.JwtUtil;
 import ru.svanchukov.user.User_Service.repository.UserRepository;
 
 import java.util.Map;
@@ -17,7 +19,9 @@ import java.util.Map;
 public class AuthorizationService {
 
     private final UserRepository userRepository;
-    private final JwtService jwtService;
+    private final JwtUtil jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     public Map<String, String> register(CreateNewUserDTO createNewUserDTO) {
         if (userRepository.findByEmail(createNewUserDTO.getEmail()).isPresent()) {
@@ -28,20 +32,28 @@ public class AuthorizationService {
         user.setName(createNewUserDTO.getName());
         user.setEmail(createNewUserDTO.getEmail());
         user.setPhoneNumber(createNewUserDTO.getPhoneNumber());
-        user.setPassword(createNewUserDTO.getPassword());
+        user.setPassword(passwordEncoder.encode(createNewUserDTO.getPassword()));
 
         userRepository.save(user);
 
-        return Map.of("message", "Пользователь успешно зарегистрирован");
+        String token = jwtService.generateToken(user.getEmail());
+
+        return Map.of("message", "Пользователь успешно зарегистрирован",
+                "token", token);
     }
 
     public Map<String, String> login(LoginRequestDTO loginRequestDTO) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequestDTO.getEmail(),
+                        loginRequestDTO.getPassword()
+                )
+        );
+
+
         User user = userRepository.findByEmail(loginRequestDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("Пользователя с таким email нет"));
-
-        if (!user.getPassword().equals(loginRequestDTO.getPassword())) {
-            throw new RuntimeException("Неверный email или password");
-        }
 
         String token = jwtService.generateToken(user.getEmail());
 

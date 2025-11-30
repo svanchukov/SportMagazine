@@ -21,9 +21,6 @@
     <developers>
         <developer/>
     </developers>
-    <modules>
-        <module>Email</module>
-    </modules>
     <scm>
         <connection/>
         <developerConnection/>

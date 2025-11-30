@@ -52,7 +52,7 @@ public class ProductController {
                 .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
     }
 
-    @PostMapping("/edit")
+    @PutMapping("/edit")
     @Operation(summary = "Обновить продукт", description = "Обновляет информацию о продукте по ID")
     public ResponseEntity<?> updateProduct(@PathVariable("productId") Long id,
             @RequestBody @Valid UpdateProductDTO updateProductDTO,

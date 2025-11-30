@@ -30,3 +30,5 @@ public class AuthorizationController {
         return ResponseEntity.ok(authorizationService.login(loginRequestDTO));
     }
 }
+
+

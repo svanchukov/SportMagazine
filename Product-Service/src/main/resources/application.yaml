@@ -4,6 +4,10 @@ svanchukov:
       uri: http://localhost:8080
 
 spring:
+
+  application:
+    name: product-service
+
   datasource:
     url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5434/products}
     username: ${NAME_POSTGRES:products}
@@ -12,14 +16,13 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   logging:
     level:
       org.springframework: DEBUG
       com.zaxxer.hikari: DEBUG
 
-  application:
-    name: product-service
+
 
   liquibase:
     change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml

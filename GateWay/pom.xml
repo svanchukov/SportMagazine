@@ -52,28 +52,28 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- JWT токен для авторизации  -->
+		<!-- Новый JJWT API -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.5</version>
 		</dependency>
 
+		<!-- Реализация JJWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.5</version>
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Поддержка JSON через Jackson -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-jackson</artifactId> <!-- для работы с JSON -->
-			<version>0.11.5</version>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.12.5</version>
 			<scope>runtime</scope>
 		</dependency>
-
-
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

@@ -3,6 +3,11 @@ server:
 
 spring:
 
+  security:
+    jwt:
+      secret: 0654417d70c4e760579abfb090b6336d5044862389821d766ce5a9f4713c12c5
+      expiration-ms: 3600000
+
   datasource:
     url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
     username: ${NAME_POSTGRES:user}
@@ -23,7 +28,7 @@ spring:
 
 
   application:
-    name: User-Service
+    name: user-service
 
   thymeleaf:
     prefix: classpath:/templates/

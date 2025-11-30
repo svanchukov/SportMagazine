@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://products-db:5432/products
+    username: products
+    password: products
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+  logging:
+    level:
+      org.springframework: DEBUG
+      com.zaxxer.hikari: DEBUG
+  application:
+    name: product-service
+  liquibase:
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    clear-checksums: true
+    enabled: true
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
