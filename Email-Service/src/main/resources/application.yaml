@@ -3,18 +3,18 @@ spring:
     name: email-service
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
-      group-id: email-group
+      group-id: ${KAFKA_CONSUMER_GROUP_ID}
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: sasha89629610292@gmail.com
-    password:
+    host: ${MAIL_HOST}
+    port: {MAIL_PORT}
+    username: {MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:

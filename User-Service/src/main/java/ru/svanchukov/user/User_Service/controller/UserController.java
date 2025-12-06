@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
  * Контроллер для управления операциями над конкретным пользователем.
  */
 @RestController
-@RequestMapping("users/{userId:\\d+}")
+@RequestMapping("/users-api/users/{userId:\\d+}")
 @Tag(name = "UserController API", description = "Операции над конкретным пользователем")
 public class UserController {
 

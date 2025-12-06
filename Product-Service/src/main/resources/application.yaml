@@ -4,7 +4,6 @@ svanchukov:
       uri: http://localhost:8080
 
 spring:
-
   application:
     name: product-service
 

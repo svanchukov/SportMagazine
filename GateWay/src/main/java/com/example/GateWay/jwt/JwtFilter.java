@@ -1,55 +1,49 @@
 package com.example.GateWay.jwt;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-@Component("JwtFilter")
+@Component
 @RequiredArgsConstructor
-public class JwtFilter extends AbstractGatewayFilterFactory<Object> {
+public class JwtFilter implements GatewayFilter {
 
     private final JwtUtil jwtUtil;
 
     @Override
-    public GatewayFilter apply(Object config) {
-        return (exchange, chain) -> {
-            String path = exchange.getRequest().getURI().getPath();
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
-            // публичные пути — не проверяем
-            if (path.startsWith("/auth/") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
-                return chain.filter(exchange);
-            }
+        String authHeader = exchange.getRequest().getHeaders()
+                .getFirst("Authorization");
 
-            String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
-            ServerHttpResponse response = exchange.getResponse();
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return unauthorized(exchange);
+        }
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                response.setStatusCode(HttpStatus.UNAUTHORIZED);
-                return response.writeWith(Mono.just(response.bufferFactory()
-                        .wrap("{\"error\":\"Нет заголовка Authorization\"}".getBytes())));
-            }
+        String token = authHeader.substring(7);
 
-            String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return unauthorized(exchange);
+        }
 
-            if (!jwtUtil.validateToken(token)) {
-                response.setStatusCode(HttpStatus.UNAUTHORIZED);
-                return response.writeWith(Mono.just(response.bufferFactory()
-                        .wrap("{\"error\":\"Недействительный или просроченный токен\"}".getBytes())));
-            }
+        Claims claims = jwtUtil.parseToken(token);
 
-            String email = jwtUtil.extractEmail(token);
+        ServerHttpRequest mutatedRequest = exchange.getRequest()
+                .mutate()
+                .header("X-User-Id", claims.getSubject())
+                .build();
 
-            ServerHttpRequest mutated = exchange.getRequest()
-                    .mutate()
-                    .header("X-User-Email", email)
-                    .build();
+        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+    }
 
-            return chain.filter(exchange.mutate().request(mutated).build());
-        };
+    private Mono<Void> unauthorized(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        return exchange.getResponse().setComplete();
     }
 }

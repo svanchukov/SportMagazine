@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("products/{productId:\\d+}")
+@RequestMapping("/product-api/products/{productId:\\d+}")
 @RequiredArgsConstructor
 @Tag(name = "Products", description = "API для работы с продуктами")
 public class ProductController {

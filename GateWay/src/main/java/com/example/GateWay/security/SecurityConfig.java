@@ -3,34 +3,37 @@ package com.example.GateWay.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-
-import java.net.http.HttpClient;
+import reactor.core.publisher.Mono;
 
 @Configuration
-@EnableReactiveMethodSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
-        http
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyExchange().authenticated()
-                )
-                .exceptionHandling(exceptions -> exceptions
+
+
+        return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .exceptionHandling(handling -> handling
                         .authenticationEntryPoint((swe, e) -> {
                             swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                            return swe.getResponse().setComplete();
+                            return Mono.empty();
                         })
-                );
-        return http.build();
+                )
+                .authorizeExchange(ex -> ex
+                                .pathMatchers("/auth/**").permitAll()
+                                .pathMatchers("/swagger/**").permitAll()
+                                .pathMatchers("/v3/api-docs/**").permitAll()
+                                .pathMatchers("/webjars/**").permitAll()
+                                .pathMatchers("/swagger-ui/**").permitAll()
+                        .anyExchange().authenticated()
+                )
+                .build();
     }
 }
-

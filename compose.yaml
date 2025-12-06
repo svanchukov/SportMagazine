@@ -2,6 +2,8 @@ version: "3.9"
 
 networks:
   sport-net:
+  internal:
+    driver: bridge
 
 volumes:
   product-pgdata:
