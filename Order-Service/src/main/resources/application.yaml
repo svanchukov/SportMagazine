@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: order-service # имя микросервиса для Eureka
+    name: order-service
   messages:
     basename: messages
     encoding: UTF-8
@@ -17,10 +17,10 @@ spring:
 #        url: http://localhost:8085
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/product
-    username: product
-    password: product
-    driver-class-name: org.postgresql.Driver
+      url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5434/products}
+      username: ${NAME_POSTGRES:products}
+      password: ${PASSWORD_POSTGRES:products}
+      driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -36,7 +36,7 @@ eureka:
     register-with-eureka: true  # Ставим true, чтобы сервис регистрировался в Eureka
     fetch-registry: true         # Убираем false, чтобы сервис мог получать информацию о других сервисах
     service-url:
-      defaultZone: http://localhost:8761/eureka/  # Указываем URL Eureka сервера
+      defaultZone: http://localhost:8761/eureka/
       instance:
         prefer-ip-address: true
 

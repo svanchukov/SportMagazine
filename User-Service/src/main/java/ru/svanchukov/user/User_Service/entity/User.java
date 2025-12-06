@@ -12,7 +12,7 @@ import java.util.UUID;
  * Соответствует таблице "User" в базе данных.
  */
 @Entity
-@Table(name = "\"User\"") // Указываем точное имя таблицы с учетом регистра и кавычек
+@Table(name = "\"user\"") // Указываем точное имя таблицы с учетом регистра и кавычек
 @Getter
 @Setter
 public class User {
@@ -37,6 +37,9 @@ public class User {
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "password")
+    private String password;
 
     public User() {
     }

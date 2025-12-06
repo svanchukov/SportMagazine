@@ -27,4 +27,7 @@ public class UserDTO  {
     @NotBlank(message = "Номер телефона обязателен")
     private String phoneNumber;
 
+    @NotBlank(message = "Пароль должен быть обязательно")
+    private String password;
+
 }

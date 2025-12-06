@@ -11,6 +11,8 @@ import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.entity.Product;
 import ru.svanchukov.productservice.handler.ProductNotFoundException;
 import ru.svanchukov.productservice.handler.ProductSavingException;
+import ru.svanchukov.productservice.kafka.KafkaDTO.ProductUpdateEventDTO;
+import ru.svanchukov.productservice.kafka.KafkaProducer;
 import ru.svanchukov.productservice.repository.ProductRepository;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ObjectMapper objectMapper;
+    private final KafkaProducer kafkaProducer;
 
     /**
      * Создание и сохранение нового продукта.
@@ -93,7 +96,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
                     LOGGER.error("Продукт с ID {} не найден для обновления", id);
-                    return new RuntimeException("Продукт с ID " + id + " не найден");
+                    return new ProductNotFoundException("Продукт с ID " + id + " не найден");
                 });
 
         product.setName(updateProductDTO.getName());
@@ -101,6 +104,18 @@ public class ProductService {
         product.setBrand(updateProductDTO.getBrand());
         product.setDescriptions(updateProductDTO.getDescriptions());
         product.setPrice(updateProductDTO.getPrice());
+
+        ProductUpdateEventDTO event = new ProductUpdateEventDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescriptions(),
+                product.getPrice(),
+                "Продукт обновлен"
+        );
+
+        kafkaProducer.sendMessageToKafka(event);
+
+        LOGGER.info("Продукт {} обновлён и отправлен в kafka", product.getName());
 
         try {
             Product updatedProduct = productRepository.save(product);

@@ -1,16 +1,44 @@
 server:
-  port: 8765
+  port: 8766
 
 spring:
-  application:
-    name: gateway-service
+  main:
+    web-application-type: reactive
 
+  autoconfigure:
+    exclude:
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
+  security:
+    jwt:
+      secret: Wv0yHc2Z9UrP7kDxLE1JV5yQnQxSe5L7pEwTyg0A9dE=
+      expiration: 3600000
+
+  debug: true
+
+  cloud:
+    gateway:
+      routes:
+
+#        - id: user-swagger
+#          uri: http://localhost:8083
+#          predicates:
+#            - Path=/swagger-ui/**
+#            - Path=/v3/api-docs/**
+#          filters:
+#            - RewritePath=/(?<segment>.*),/${segment}
+#
+#        - id: gateway-auth
+#          uri: no://op
+#          predicates:
+#            - Path=/auth/**
+#
+#        - id: user-service
+#          uri: http://localhost:8083
+#          predicates:
+#            - Path=/users/**
+#          filters:
+#            - RewritePath=/users/(?<segment>.*),/${segment}
+
+springdoc:
+  swagger-ui:
+    url: /swagger/api-docs

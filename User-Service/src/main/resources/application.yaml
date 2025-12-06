@@ -3,14 +3,10 @@ server:
 
 spring:
 
-  application:
-    name: User-Service
-
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    mode: HTML
-    cache: false
+  security:
+    jwt:
+      secret: ${JWT_SECRET:DEFAULT_SECRET_CHANGE_ME}
+      expiration-ms: ${JWT_EXPIRE_MS:3600000}
 
   datasource:
     url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
@@ -18,7 +14,8 @@ spring:
     password: ${PASSWORD_POSTGRES:user}
     driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
     hikari:
-      maximum-pool-size: ${POOL_SIZE:10}  # опционально
+      maximum-pool-size: ${POOL_SIZE:10}
+      connection-timeout: 30000
 
   jpa:
     hibernate:
@@ -26,10 +23,18 @@ spring:
     show-sql: true
 
   liquibase:
+    enabled: true
     clear-checksums: true
     change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
-    enabled: true
 
+  application:
+    name: user-service
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
 
 eureka:
   client:
@@ -39,4 +44,3 @@ eureka:
       defaultZone: ${URL_EUREKA:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
-

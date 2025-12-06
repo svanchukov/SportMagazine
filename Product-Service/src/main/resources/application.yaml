@@ -4,22 +4,24 @@ svanchukov:
       uri: http://localhost:8080
 
 spring:
+  application:
+    name: product-service
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/product
-    username: product
-    password: product
-    driver-class-name: org.postgresql.Driver
+    url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5434/products}
+    username: ${NAME_POSTGRES:products}
+    password: ${PASSWORD_POSTGRES:products}
+    driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   logging:
     level:
       org.springframework: DEBUG
       com.zaxxer.hikari: DEBUG
 
-  application:
-    name: product-service
+
 
   liquibase:
     change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml

@@ -12,8 +12,6 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      - user-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d user"]
       interval: 10s
@@ -26,9 +24,6 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
-    networks:
-      - user-net
-
 
   user-service:
     build: .   # путь до Dockerfile
@@ -43,14 +38,13 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - user-db
-      - eureka-server
-    networks:
-      - user-net
+      user-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
 
 volumes:
-  pgdata:
+  user-pgdata:
+    user-pgdata:/var/lib/postgresql/data
 
-networks:
-  user-net:
-    driver: bridge

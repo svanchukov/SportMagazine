@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  product-db:
+    image: postgres:16
+    container-name: product-db
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: products
+      POSTGRES_PASSWORD: products
+    ports:
+      "5434:5432"
+    volumes:
+      - product-pgdata:/var/lib/postgresql/data
+
+  eureka-server:
+    build: ../eureka
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  order-service:
+    build: .
+    container_name: order-service
+    environment:
+      URL_DATASOURCE_DB: jdbc:postgresql://products-db:5432/products
+      NAME_POSTGRES: products
+      PASSWORD_POSTGRES: products
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8084:8080"
+    depends_on:
+      - products-db
+      - eureka-server
+
+volumes:
+  order-pgdata:

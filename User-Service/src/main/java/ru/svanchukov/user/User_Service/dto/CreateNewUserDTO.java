@@ -27,5 +27,9 @@ public class CreateNewUserDTO {
     )
     private String phoneNumber;
 
+    @NotBlank(message = "Пароль должен быть обязательным")
+    @Size(min = 3, message = "Пароль должен быть не менее 3-х символов")
+    private String password;
+
 
 }
