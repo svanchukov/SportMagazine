@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.user.User_Service.dto.UpdateUserDTO;
 import ru.svanchukov.user.User_Service.dto.UserDTO;
+import ru.svanchukov.user.User_Service.handler.UserNotFoundException;
 import ru.svanchukov.user.User_Service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +38,7 @@ public class UserController {
         LOGGER.info("Загрузка пользователя по ID: {}", userId);
         return userService.findById(userId)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + userId + " не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     @Operation(summary = "Получить детали пользователя")
@@ -46,7 +47,7 @@ public class UserController {
 
         LOGGER.info("Загрузка деталей пользователя с ID: {}", userId);
         final UserDTO user = userService.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + userId + " не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + userId + " не найден"));
         return ResponseEntity.ok(user);
     }
 

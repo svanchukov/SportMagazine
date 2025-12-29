@@ -1,5 +1,5 @@
 server:
-  port: 8766
+  port: 8765
 
 spring:
   main:
@@ -41,4 +41,5 @@ spring:
 
 springdoc:
   swagger-ui:
-    url: /swagger/api-docs
+    path: /swagger-ui.html
+    config-url: /swagger/api-docs

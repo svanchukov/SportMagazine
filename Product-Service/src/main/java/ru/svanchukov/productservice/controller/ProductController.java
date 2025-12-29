@@ -1,7 +1,6 @@
 package ru.svanchukov.productservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
+import ru.svanchukov.productservice.handler.ProductNotFoundException;
 import ru.svanchukov.productservice.service.ProductService;
 
 import java.util.Locale;
@@ -40,16 +40,16 @@ public class ProductController {
         LOGGER.info("Запрос на загрузку продукта с ID: {}", productId);
         return productService.findById(productId)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new NoSuchElementException("errors.product.not_found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product with id: %d not found", productId));
     }
 
     @GetMapping
     @Operation(summary = "Получить продукт по ID", description = "Возвращает детальную информацию о продукте")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable("productId") Long id) {
-        LOGGER.info("Запрос на получение продукта с ID: {}", id);
-        return productService.findById(id)
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable("productId") Long productId) {
+        LOGGER.info("Запрос на получение продукта с ID: {}", productId);
+        return productService.findById(productId)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new RuntimeException("Продукт с ID " + id + " не найден"));
+                .orElseThrow(() -> new ProductNotFoundException("Продукт с ID " + productId + " не найден", productId));
     }
 
     @PutMapping("/edit")
@@ -92,13 +92,15 @@ public class ProductController {
                                 exception.getMessage(), locale))));
     }
 
-    private UpdateProductDTO mapToUpdateDto(ProductDTO product) {
-        return new UpdateProductDTO(
-                product.getName(),
-                product.getCategory(),
-                product.getDescriptions(),
-                product.getPrice(),
-                product.getBrand()
-        );
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleProductNotFound(ProductNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ProblemDetail.forStatusAndDetail(
+                        HttpStatus.NOT_FOUND,
+                        exception.getMessage()
+                ));
     }
+
+
+
 }

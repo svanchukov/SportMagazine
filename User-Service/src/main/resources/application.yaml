@@ -3,11 +3,6 @@ server:
 
 spring:
 
-  security:
-    jwt:
-      secret: ${JWT_SECRET:DEFAULT_SECRET_CHANGE_ME}
-      expiration-ms: ${JWT_EXPIRE_MS:3600000}
-
   datasource:
     url: ${URL_DATASOURCE_DB:jdbc:postgresql://localhost:5433/user}
     username: ${NAME_POSTGRES:user}
@@ -19,22 +14,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
 
   liquibase:
-    enabled: true
-    clear-checksums: true
     change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
 
   application:
     name: user-service
 
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    mode: HTML
-    cache: false
 
 eureka:
   client:

@@ -12,10 +12,20 @@ spring:
     username: ${NAME_POSTGRES:products}
     password: ${PASSWORD_POSTGRES:products}
     driver-class-name: ${DRIVER_NAME:org.postgresql.Driver}
+
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+    show-sql: true
+
+  liquibase:
+    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
+    enabled: true
+
+  redis:
+    host: localhost
+    port: 6379
+
   logging:
     level:
       org.springframework: DEBUG
@@ -23,9 +33,6 @@ spring:
 
 
 
-  liquibase:
-    change-log: classpath:db/scripts_liquibase/v.1.0.0/0000-init-table.xml
-    enabled: true
 
 eureka:
   client:

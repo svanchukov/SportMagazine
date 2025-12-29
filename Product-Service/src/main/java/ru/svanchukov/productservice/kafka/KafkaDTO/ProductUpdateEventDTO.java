@@ -5,11 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class ProductUpdateEventDTO {
 
-    private Integer id;
+    private Long id;
 
     private String name;
 
@@ -18,4 +17,12 @@ public class ProductUpdateEventDTO {
     private Double price;
 
     private String message;
+
+    public ProductUpdateEventDTO(Long id, String name, String descriptions, Double price, String message) {
+        this.id = id;
+        this.name = name;
+        this.descriptions = descriptions;
+        this.price = price;
+        this.message = message;
+    }
 }

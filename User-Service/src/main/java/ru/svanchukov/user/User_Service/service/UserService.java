@@ -26,7 +26,6 @@ public class UserService {
 
     /**
      * Получение пользователя по ID.
-     * @param id идентификатор пользователя
      */
     public Optional<UserDTO> findById(final Long id) {
         final Optional<UserDTO> user = userRepository.findById(id).map(this::mapToDTO);
@@ -45,7 +44,6 @@ public class UserService {
 
     /**
      * Получение данных для редактирования пользователя.
-     * @param userId идентификатор пользователя
      */
     public UpdateUserDTO getUpdateUserDTO(final Long userId) {
         final UserDTO userDTO = findById(userId)
@@ -61,10 +59,7 @@ public class UserService {
 
     /**
      * Обновление данных пользователя.
-     *
-     * @param id            идентификатор пользователя
      * @param updateUserDTO данные для обновления
-     * @return
      */
     public UpdateUserDTO updateUser(final Long id, final UpdateUserDTO updateUserDTO) {
         final User user = userRepository.findById(id)
@@ -89,7 +84,6 @@ public class UserService {
 
     /**
      * Удаление пользователя по ID.
-     * @param id идентификатор пользователя
      */
     public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
@@ -109,7 +103,6 @@ public class UserService {
     /**
      * Преобразует сущность User в DTO.
      * @param user сущность пользователя
-     * @return UserDTO
      */
     private UserDTO mapToDTO(final User user) {
         final UserDTO dto = new UserDTO();

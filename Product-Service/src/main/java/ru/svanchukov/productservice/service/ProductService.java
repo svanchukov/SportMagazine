@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.svanchukov.productservice.dto.product.CreateNewProductDTO;
 import ru.svanchukov.productservice.dto.product.ProductDTO;
 import ru.svanchukov.productservice.dto.product.UpdateProductDTO;
@@ -91,13 +92,12 @@ public class ProductService {
      * @param id                идентификатор продукта
      * @param updateProductDTO  новые данные для обновления
      */
+    @Transactional
     public ProductDTO updateProduct(Long id, UpdateProductDTO updateProductDTO) {
         LOGGER.info("Запрос на обновление продукта с ID: {}", id);
+
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    LOGGER.error("Продукт с ID {} не найден для обновления", id);
-                    return new ProductNotFoundException("Продукт с ID " + id + " не найден");
-                });
+                .orElseThrow(() -> new ProductNotFoundException("Продукт с ID " + id + " не найден", id));
 
         product.setName(updateProductDTO.getName());
         product.setCategory(updateProductDTO.getCategory());
@@ -105,26 +105,27 @@ public class ProductService {
         product.setDescriptions(updateProductDTO.getDescriptions());
         product.setPrice(updateProductDTO.getPrice());
 
+        Product updatedProduct;
+        try {
+            updatedProduct = productRepository.save(product);
+            LOGGER.info("Продукт с ID: {} успешно сохранен в БД", id);
+        } catch (Exception e) {
+            LOGGER.error("Ошибка при сохранении в БД", e);
+            throw new ProductSavingException("Ошибка при обновлении продукта с ID " + id);
+        }
+
         ProductUpdateEventDTO event = new ProductUpdateEventDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescriptions(),
-                product.getPrice(),
+                updatedProduct.getId(),
+                updatedProduct.getName(),
+                updatedProduct.getDescriptions(),
+                updatedProduct.getPrice(),
                 "Продукт обновлен"
         );
 
         kafkaProducer.sendMessageToKafka(event);
+        LOGGER.info("Событие обновления продукта {} отправлено в Kafka", updatedProduct.getName());
 
-        LOGGER.info("Продукт {} обновлён и отправлен в kafka", product.getName());
-
-        try {
-            Product updatedProduct = productRepository.save(product);
-            LOGGER.info("Продукт с ID: {} успешно обновлен", id);
-            return mapToDto(updatedProduct);
-        } catch (Exception e) {
-            LOGGER.error("Ошибка при обновлении продукта с ID {}", id, e);
-            throw new ProductSavingException("Ошибка при обновлении продукта с ID " + id);
-        }
+        return mapToDto(updatedProduct);
     }
 
     /**
@@ -137,7 +138,7 @@ public class ProductService {
 
         if (!productRepository.existsById(productId)) {
             LOGGER.error("Продукт с ID {} не найден для удаления", productId);
-            throw new ProductNotFoundException("Продукт с ID " + productId + " не найден");
+            throw new ProductNotFoundException("Продукт с ID " + productId + " не найден", productId);
         }
 
         productRepository.deleteById(productId);
@@ -166,7 +167,7 @@ public class ProductService {
      */
     private ProductDTO mapToDto(Product product) {
         final ProductDTO dto = new ProductDTO();
-        dto.setId((long) product.getId());
+        dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setBrand(product.getBrand());
         dto.setPrice(product.getPrice());

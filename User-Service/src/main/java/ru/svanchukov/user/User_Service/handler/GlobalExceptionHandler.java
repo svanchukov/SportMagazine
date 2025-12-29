@@ -1,5 +1,7 @@
 package ru.svanchukov.user.User_Service.handler;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,13 +19,16 @@ public class GlobalExceptionHandler {
 
     /**
      * Обрабатывает все необработанные исключения.
-     * @param e     исключение
-     * @param model модель для передачи данных в представление
-     * @return имя HTML-шаблона страницы ошибки
      */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(exception.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
-    public String handleError(final Exception e, final Model model) {
-        model.addAttribute("error", e.getMessage());
-        return "error";
+    public ResponseEntity<String> handleOtherExceptions(Exception exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(exception.getMessage());
     }
 }

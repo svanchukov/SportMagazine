@@ -30,4 +30,5 @@ public class UserDTO  {
     @NotBlank(message = "Пароль должен быть обязательно")
     private String password;
 
+
 }

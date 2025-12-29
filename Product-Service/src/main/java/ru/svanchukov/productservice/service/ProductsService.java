@@ -97,7 +97,7 @@ public class ProductsService {
 
         if (!productRepository.existsById(productId)) {
             LOGGER.error("Продукт с ID {} не найден для удаления", productId);
-            throw new ProductNotFoundException("Продукт с ID " + productId + " не найден");
+            throw new ProductNotFoundException("Продукт с ID " + productId + " не найден", productId);
         }
 
         productRepository.deleteById(productId);

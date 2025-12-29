@@ -3,6 +3,7 @@ package ru.svanchukov.user.User_Service.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @Table(name = "\"user\"") // Указываем точное имя таблицы с учетом регистра и кавычек
 @Getter
 @Setter
+@ToString
 public class User {
 
     /**

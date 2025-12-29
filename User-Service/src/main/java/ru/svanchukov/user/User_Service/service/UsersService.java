@@ -56,12 +56,13 @@ public class UsersService {
         user.setEmail(createNewUserDTO.getEmail());
         user.setPhoneNumber(createNewUserDTO.getPhoneNumber());
         user.setName(createNewUserDTO.getName());
+        user.setPassword(createNewUserDTO.getPassword());
 
 
-        userRepository.save(user);
-        LOGGER.info("Создан новый пользователь: {}", user);
+        User savedUser = userRepository.save(user);
+        LOGGER.info("Создан новый пользователь: {}", savedUser);
 
-        return mapToDTO(user);
+        return mapToDTO(savedUser);
     }
 
     /**
